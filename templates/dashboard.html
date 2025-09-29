@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Личный кабинет</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 100%;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        h2 {
+            margin: 0 0 10px 0;
+        }
+
+        p, code {
+            margin: 0 0 10px 0;
+            word-break: break-word;
+        }
+
+        a.button {
+            display: inline-block;
+            margin: 5px 5px 0 0;
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+
+        a.button:hover {
+            background-color: #0056b3;
+        }
+
+        a.logout {
+            display: block;
+            margin-top: 20px;
+            color: #dc3545;
+            text-decoration: none;
+            transition: text-decoration 0.3s;
+        }
+
+        a.logout:hover {
+            text-decoration: underline;
+        }
+
+        .buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Информация о пользователе</h2>
+        <p><b>Логин:</b> {{ user_info.username }}</p>
+        <hr>
+        <p>Эта информация может использоваться в запросе к БД, например:</p>
+        <code>SELECT * FROM users WHERE username = '{{ user_info.username }}';</code>
+
+        <div class="buttons">
+            <a class="button" href="/add_bike">Добавить велосипед</a>
+            <a class="button" href="/add_anthro">Ввести антропометрию</a>
+            <a class="button" href="/canvas">Построить посадку</a>
+        </div>
+
+        <a class="logout" href="{{ url_for('logout') }}">Выйти</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Canvas Paper.js</title>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.15/paper-full.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+            display: flex;
+            height: 100vh;
+            background: #f4f6f8;
+        }
+
+        .sidebar {
+            width: 300px;
+            padding: 20px;
+            box-sizing: border-box;
+            border-right: 1px solid #ccc;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            background: #fff;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 20px;
+        }
+
+        canvas {
+            width: 100%;
+            height: 80%;
+            border: 1px solid #ddd;
+            background: #fff;
+            border-radius: 10px;
+        }
+
+        h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .block {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        input, select, button {
+            padding: 8px;
+            font-size: 14px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .top-bar {
+            width: 100%;
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .reset-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+        }
+
+        .autocomplete-item {
+            padding: 5px;
+            cursor: pointer;
+        }
+
+        .autocomplete-item:hover {
+            background-color: #eee;
+        }
+    </style>
+</head>
+<body>
+    <!-- Левая панель -->
+    <div class="sidebar">
+        <div class="block">
+            <h3>Bicycle</h3>
+            <div class="input-group">
+                <input type="text" placeholder="Search" id="bikeSearch" readonly>
+                <div id="bikeList" class="autocomplete-list" style="border:1px solid #ccc; display:none; max-height:150px; overflow-y:auto;"></div>
+                <select>
+                    <option>Select size</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Центральная часть с канвасом -->
+    <div class="main">
+        <div class="top-bar">
+            <button class="menu-btn" onclick="window.location.href='/dashboard'">В меню</button>
+        </div>
+        <canvas id="myCanvas" resize></canvas>
+        <button class="reset-btn" id="resetBtn">Reset</button>
+    </div>
+
+    <!-- Правая панель -->
+    <div class="sidebar">
+        <div class="block">
+            <h3>Saved Fittings</h3>
+            <div class="input-group">
+                <input type="text" placeholder="Search" id="fitSearch" readonly>
+                <div id="fitList" class="autocomplete-list" style="border:1px solid #ccc; display:none; max-height:150px; overflow-y:auto;"></div>
+            </div>
+        </div>
+
+        <div class="block">
+            <h3>Save Current Fitting</h3>
+            <div class="input-group">
+                <input type="text" id="fitInput" placeholder="Fitting name">
+                <button id="saveBtn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Передаем данные из Flask в JS -->
+    <script type="text/javascript">
+        var USER_ID = {{ user_id | tojson }};
+    </script>
+
+    <!-- Подключаем внешний JS -->
+    <script type="module" src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

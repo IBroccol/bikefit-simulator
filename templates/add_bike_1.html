@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Добавить велосипед</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f6f8; padding: 20px; }
+        form { background: white; padding: 20px; border-radius: 10px; max-width: 600px; margin: auto; }
+        h3 { margin-top: 20px; }
+        input { width: 100%; margin: 5px 0; padding: 5px; }
+        button { margin-top: 15px; padding: 10px; width: 100%; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #218838; }
+    </style>
+</head>
+<body>
+    <form method="POST">
+        <h2>📐 Геометрия рамы</h2>
+        <input type="number" step="0.1" name="seatTube" placeholder="seatTube">
+        <input type="number" step="0.1" name="seatAngle" placeholder="seatAngle">
+        <input type="number" step="0.1" name="headTube" placeholder="headTube">
+        <input type="number" step="0.1" name="headAngle" placeholder="headAngle">
+        <input type="number" step="0.1" name="bbdrop" placeholder="bbdrop">
+        <input type="number" step="0.1" name="chainstay" placeholder="chainstay">
+        <input type="number" step="0.1" name="wheelbase" placeholder="wheelbase">
+        <input type="number" step="0.1" name="stack" placeholder="stack">
+        <input type="number" step="0.1" name="reach" placeholder="reach">
+
+        <h2>🛞 Колёса и трансмиссия</h2>
+        <input type="number" step="0.1" name="rimD" placeholder="rimD">
+        <input type="number" step="0.1" name="tyreW" placeholder="tyreW">
+        <input type="number" step="0.1" name="crankLen" placeholder="crankLen">
+
+        <h2>🚲 Посадка и органы управления</h2>
+        <input type="number" step="0.1" name="stemLen" placeholder="stemLen">
+        <input type="number" step="0.1" name="stemAngle" placeholder="stemAngle">
+        <input type="number" step="0.1" name="minStemHight" placeholder="minStemHight">
+        <input type="number" step="0.1" name="maxStemHight" placeholder="maxStemHight">
+        <input type="number" step="0.1" name="barReach" placeholder="barReach">
+        <input type="number" step="0.1" name="barDrop" placeholder="barDrop">
+        <input type="number" step="0.1" name="shifterReach" placeholder="shifterReach">
+
+        <h2>💺 Седло</h2>
+        <input type="number" step="0.1" name="saddleLen" placeholder="saddleLen">
+        <input type="number" step="0.1" name="saddleRailLen" placeholder="saddleRailLen">
+        <input type="number" step="0.1" name="saddleHeight" placeholder="saddleHeight">
+        <input type="number" step="0.1" name="minseatpostLen" placeholder="minseatpostLen">
+        <input type="number" step="0.1" name="maxseatpostLen" placeholder="maxseatpostLen">
+
+        <button type="submit">Добавить</button>
+    </form>
+</body>
+</html>

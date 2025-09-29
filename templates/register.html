@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Регистрация</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .register-container {
+            background: #fff;
+            padding: 30px 25px;
+            border-radius: 12px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+            width: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .register-container h2 {
+            margin-bottom: 20px;
+            text-align: center;
+            color: #333;
+        }
+        form {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        input:focus {
+            outline: none;
+            border-color: #28a745;
+            box-shadow: 0 0 4px rgba(40,167,69,0.3);
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #28a745;
+            border: none;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background 0.3s;
+            margin-top: 4px;
+        }
+        button:hover {
+            background: #218838;
+        }
+        .auth-link {
+            display: inline-block;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .auth-link:hover {
+            text-decoration: underline;
+        }
+        .flash {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            width: 100%;
+            text-align: center;
+            font-size: 14px;
+        }
+        .flash.success { background: #d4edda; color: #155724; }
+        .flash.danger  { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <h2>Регистрация</h2>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, msg in messages %}
+                    <div class="flash {{ category }}">{{ msg }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <form method="POST">
+            <input type="text" name="username" placeholder="Логин" required>
+            <input type="password" name="password" placeholder="Пароль" required>
+            <button type="submit">Зарегистрироваться</button>
+        </form>
+        <a class="auth-link" href="{{ url_for('login') }}">Вернуться к авторизации</a>
+    </div>
+</body>
+</html>

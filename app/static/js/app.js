@@ -498,7 +498,7 @@ class Interface {
 
     async fetchSizes(bike_model) {
         try {
-            const response = await fetch('/get_bike_sizes', {
+            const response = await fetch('/bikes/sizes', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ bike_model })
@@ -543,7 +543,7 @@ class Interface {
 
     async fetchBikeId() {
         try {
-            const response = await fetch('/get_bike_id', {
+            const response = await fetch('/bikes/id', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ bike_model: this.cur_bike_model, size: this.cur_size })
@@ -559,7 +559,8 @@ class Interface {
 
     async fetchBikes() {
         try {
-            const response = await fetch('/get_bike_names', {
+            console.log('bikes/list')
+            const response = await fetch('/bikes/list', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ user_id: this.user_id })
@@ -579,7 +580,7 @@ class Interface {
             return [];
         }
         try {
-            const response = await fetch('/get_fit_names', {
+            const response = await fetch('/fits/list', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ user_id: this.user_id, bike_id: this.cur_bike_id })
@@ -634,13 +635,14 @@ class Interface {
         //console.log(fitSettings)
 
         try {
-            const response = await fetch("/save_fit", {
+            const response = await fetch("/fits/save", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(fitSettings)
+                body: JSON.stringify({ user_id: USER_ID, ...fitSettings })
             });
 
-            const data = await response.json();
+            var data = await response.json()
+
             if (data.success) {
                 alert("Настройки успешно сохранены!");
             } else {
@@ -654,7 +656,7 @@ class Interface {
 
     async getBikeGeo(bike_id) {
         try {
-            const response = await fetch('/get_bike_geo', {
+            const response = await fetch('/bikes/geo', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ bike_id: bike_id })
@@ -670,7 +672,7 @@ class Interface {
 
     async getFitData(fit_name, bike_id) {
         try {
-            const response = await fetch('/get_fit_data', {
+            const response = await fetch('/fits/get', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ fit_name: fit_name, bike_id: bike_id })
@@ -686,7 +688,7 @@ class Interface {
 
     async getBasicFitData(user_id, bike_id) {
         try {
-            const response = await fetch('/get_basic_fit_data', {
+            const response = await fetch('/fits/basic', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ user_id: user_id, bike_id: bike_id })
@@ -721,7 +723,7 @@ class Interface {
 
     async getAnthro(user_id) {
         try {
-            const response = await fetch('/get_anthro_data', {
+            const response = await fetch('/fits/anthro', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ user_id, user_id })

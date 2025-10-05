@@ -75,19 +75,13 @@
 </head>
 <body>
     <div class="card">
-        <h2>Информация о пользователе</h2>
-        <p><b>Логин:</b> {{ user_info.username }}</p>
-        <hr>
-        <p>Эта информация может использоваться в запросе к БД, например:</p>
-        <code>SELECT * FROM users WHERE username = '{{ user_info.username }}';</code>
-
         <div class="buttons">
             <a class="button" href="/add_bike">Добавить велосипед</a>
             <a class="button" href="/add_anthro">Ввести антропометрию</a>
             <a class="button" href="/canvas">Построить посадку</a>
         </div>
 
-        <a class="logout" href="{{ url_for('auth.logout') }}">Выйти</a>
+        <a class="logout" href="/logout">Выйти</a>
     </div>
 </body>
 </html>

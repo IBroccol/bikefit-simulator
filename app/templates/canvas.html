@@ -147,12 +147,7 @@
             </div>
         </div>
     </div>
-
-    <!-- Передаем данные из Flask в JS -->
-    <script type="text/javascript">
-        var USER_ID = {{ user_id | tojson }};
-    </script>
-
+    
     <!-- Подключаем внешний JS -->
     <script type="module" src="{{ url_for('static', filename='js/app.js') }}"></script>
 

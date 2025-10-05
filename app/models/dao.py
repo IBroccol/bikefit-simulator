@@ -6,24 +6,24 @@ from flask import jsonify
 
 # --- Пользователи ---
 def create_user(username, password):
-    with get_conn() as conn:
-        with conn.cursor() as cur:
-            cur.execute("SELECT id FROM users WHERE username=%s", (username,))
-            if cur.fetchone():
-                return False
-            password_hash = generate_password_hash(password)
-            cur.execute("INSERT INTO users (username, password_hash) VALUES (%s, %s)", (username, password_hash))
-            conn.commit()
-            return True
+    try:
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT id FROM users WHERE username=%s", (username,))
+                if cur.fetchone():
+                    return {"success": False}
+                password_hash = generate_password_hash(password)
+                cur.execute("INSERT INTO users (username, password_hash) VALUES (%s, %s)", (username, password_hash))
+                conn.commit()
+                return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
 def verify_user(username, password):
     user = get_user(username)
     if user and check_password_hash(user["password_hash"], password):
-        return True
-    return False
-        # with conn.cursor(row_factory=dict_row) as cur:
-        #     cur.execute("SELECT id FROM users WHERE username=%s AND password=%s", (username, password))
-        #     return cur.fetchone() is not None
+        return {"id": user["id"]}
+    return None
 
 def get_user(username):
     with get_conn() as conn:
@@ -32,14 +32,26 @@ def get_user(username):
             return cur.fetchone()
 
 # --- Велосипеды ---
-def add_bike(user_id, bike):
-    with get_conn() as conn:
-        with conn.cursor() as cur:
-            cur.execute("""
-                INSERT INTO bikes (user_id, model, size) VALUES (%s, %s, %s)
-            """, (user_id, bike["model"], bike["size"]))
-            conn.commit()
-            return True
+def add_bike(user_id, bike: dict):
+    try:
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                bike_with_uid = {"user_id": user_id, **bike}
+
+                columns = [f'"{col_name}"' for col_name in bike_with_uid.keys()]
+                placeholders = ", ".join(["%s"] * len(columns))
+                col_names = ", ".join(columns)
+
+                sql = f"INSERT INTO bikes ({col_names}) VALUES ({placeholders})"
+
+                print(sql)
+
+                cur.execute(sql, tuple(bike_with_uid.values()))
+                conn.commit()
+                return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
 
 def get_bike_geo(bike_id):
     with get_conn() as conn:
@@ -70,12 +82,22 @@ def get_bike_id(bike_model, size):
 def add_anthropometry(user_id, data):
     with get_conn() as conn:
         with conn.cursor() as cur:
-            cur.execute("""
-                INSERT INTO anthropometry (user_id, inseam, torso, arm, leg)
-                VALUES (%s, %s, %s, %s, %s)
-            """, (user_id, data.get("inseam"), data.get("torso"), data.get("arm"), data.get("leg")))
+            # добавляем user_id в словарь
+            data_with_uid = {"user_id": user_id, **data}
+
+            # список колонок
+            columns = [f'"{col_name}"' for col_name in data_with_uid.keys()]
+            col_names = ", ".join(columns)
+            placeholders = ", ".join(["%s"] * len(columns))
+
+            sql = f"""
+                INSERT INTO anthropometry ({col_names})
+                VALUES ({placeholders})
+            """
+
+            cur.execute(sql, tuple(data_with_uid.values()))
             conn.commit()
-            return True
+            return {"success": True}
 
 def get_anthro_by_user(user_id):
     with get_conn() as conn:

@@ -443,8 +443,7 @@ class Drawer {
 }
 
 class Interface {
-    constructor(user_id) {
-        this.user_id = user_id
+    constructor() {
         this.cur_bike_id = null;
         this.cur_fit_name = null;
 
@@ -464,7 +463,7 @@ class Interface {
 
         //console.log(this.resetButton)
         this.setupEventListeners()
-        this.getAnthro(this.user_id)
+        this.getAnthro()
     }
 
     setupEventListeners() {
@@ -537,7 +536,7 @@ class Interface {
         this.cur_bike_id = bike_id
             //console.log(bike_geo)
 
-        this.drawer.INIT_FIT = await this.getBasicFitData(this.user_id, bike_id)
+        this.drawer.INIT_FIT = await this.getBasicFitData(bike_id)
         this.drawer.draw()
     }
 
@@ -559,11 +558,9 @@ class Interface {
 
     async fetchBikes() {
         try {
-            console.log('bikes/list')
             const response = await fetch('/bikes/list', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: this.user_id })
+                method: 'GET',
+                credentials: "include",
             });
 
             if (!response.ok) throw new Error("Ошибка при получении данных");
@@ -583,7 +580,8 @@ class Interface {
             const response = await fetch('/fits/list', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: this.user_id, bike_id: this.cur_bike_id })
+                credentials: "include",
+                body: JSON.stringify({ bike_id: this.cur_bike_id })
             });
 
             if (!response.ok) throw new Error("Ошибка при получении данных");
@@ -638,7 +636,8 @@ class Interface {
             const response = await fetch("/fits/save", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ user_id: USER_ID, ...fitSettings })
+                credentials: "include",
+                body: JSON.stringify(fitSettings)
             });
 
             var data = await response.json()
@@ -675,6 +674,7 @@ class Interface {
             const response = await fetch('/fits/get', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: "include",
                 body: JSON.stringify({ fit_name: fit_name, bike_id: bike_id })
             });
 
@@ -686,12 +686,13 @@ class Interface {
         }
     }
 
-    async getBasicFitData(user_id, bike_id) {
+    async getBasicFitData(bike_id) {
         try {
             const response = await fetch('/fits/basic', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: user_id, bike_id: bike_id })
+                credentials: "include",
+                body: JSON.stringify({ bike_id: bike_id })
             });
 
             if (response.ok) return await response.json();
@@ -721,12 +722,11 @@ class Interface {
         this.drawer.draw()
     }
 
-    async getAnthro(user_id) {
+    async getAnthro() {
         try {
             const response = await fetch('/fits/anthro', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id, user_id })
+                method: 'GET',
+                credentials: "include",
             });
 
             if (response.ok) {
@@ -756,5 +756,5 @@ class Interface {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    const INTERFACE = new Interface(USER_ID);
+    const INTERFACE = new Interface();
 });

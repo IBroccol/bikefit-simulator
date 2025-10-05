@@ -1,17 +1,22 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session
 from app.services import bike_service
 
 bikes_bp = Blueprint("bikes", __name__, url_prefix="/bikes")
 
 @bikes_bp.route("/add", methods=["POST"])
 def add_bike():
+    user_id = session.get("user_id")
     data = request.json
-    result = bike_service.add_bike(data)
+    for bike_data in data:
+        print(bike_data)
+        result = bike_service.add_bike(user_id, bike_data)
     return jsonify(result)
 
-@bikes_bp.route("/list", methods=["POST"])
+@bikes_bp.route("/list", methods=["GET"])
 def list_user_bikes():
-    user_id = request.json.get("user_id")
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "unauthorized"}), 401
     result = bike_service.get_user_bikes(user_id)
     return jsonify(result)
 

@@ -90,14 +90,14 @@ export async function sendBikes() {
     });
 
     try {
-        const res = await fetch("/add_bike", {
+        const res = await fetch("/bikes/add", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(bikes)
         });
 
         const result = await res.json();
-        alert(result.status === "ok" ? "Успешно сохранено!" : "Ошибка при сохранении");
+        alert(result.success ? "Успешно сохранено!" : "Ошибка при сохранении");
     } catch (err) {
         console.error(err);
         alert("Ошибка сети");

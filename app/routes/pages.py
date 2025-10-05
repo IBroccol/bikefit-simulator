@@ -46,8 +46,8 @@ def register_page():
 
 @pages_bp.route("/logout")
 def logout_page():
-    session.pop("username", None)
-    flash("Вы вышли из системы", "info")
+    if redirect(url_for("auth.logout")):
+        flash("Вы вышли из системы", "info")
     return redirect(url_for("pages.login_page"))
 
 
@@ -55,64 +55,31 @@ def logout_page():
 
 @pages_bp.route("/dashboard")
 def dashboard():
-    if "username" not in session:
+    if "user_id" not in session:
         flash("Сначала войдите в систему", "danger")
         return redirect(url_for("pages.login_page"))
-    return render_template("dashboard.html", user_info={"username": session["username"]})
+    return render_template("dashboard.html")
 
 
 # -------------------- Add Bike --------------------
 
-@pages_bp.route("/add_bike", methods=["GET", "POST"])
+@pages_bp.route("/add_bike")
 def add_bike_page():
-    if "username" not in session:
-        if request.method == "GET":
-            flash("Сначала войдите в систему", "danger")
-            return redirect(url_for("pages.login_page"))
-        return jsonify({"status": "error", "message": "Необходима авторизация"}), 401
-
-    if request.method == "POST":
-        try:
-            bikes = request.get_json()
-            if not isinstance(bikes, list):
-                return jsonify({"status": "error", "message": "Ожидался массив данных"}), 400
-
-            user = get_user(session["username"])
-            ok_count = 0
-            for bike in bikes:
-                if add_bike(user["id"], bike):
-                    ok_count += 1
-
-            if ok_count == len(bikes):
-                return jsonify({"status": "ok", "saved": ok_count})
-            else:
-                return jsonify({"status": "partial", "saved": ok_count, "total": len(bikes)}), 207
-
-        except Exception as e:
-            return jsonify({"status": "error", "message": str(e)}), 500
+    print(session, session['user_id'])
+    if "user_id" not in session:
+        flash("Сначала войдите в систему", "danger")
+        return redirect(url_for("pages.login_page"))
 
     return render_template("add_bike.html")
 
 
 # -------------------- Add Anthropometry --------------------
 
-@pages_bp.route("/add_anthro", methods=["GET", "POST"])
+@pages_bp.route("/add_anthro")
 def add_anthro_page():
-    if "username" not in session:
+    if "user_id" not in session:
         flash("Сначала войдите в систему", "danger")
         return redirect(url_for("pages.login_page"))
-
-    if request.method == "POST":
-        try:
-            user = get_user(session["username"])
-            data = {k: float(request.form.get(k)) for k in request.form}
-            if add_anthropometry(user["id"], data):
-                flash("Антропометрические данные сохранены!", "success")
-                return redirect(url_for("pages.dashboard"))
-            else:
-                flash("Ошибка при сохранении данных", "danger")
-        except ValueError:
-            flash("Некорректные данные", "danger")
 
     return render_template("add_anthro.html")
 
@@ -121,36 +88,28 @@ def add_anthro_page():
 
 @pages_bp.route("/canvas")
 def canvas_page():
-    if "username" not in session:
+    if "user_id" not in session:
         flash("Сначала войдите в систему", "danger")
         return redirect(url_for("pages.login_page"))
 
-    user = get_user(session["username"])
-    if not user:
-        flash("Пользователь не найден", "danger")
-        return redirect(url_for("pages.login_page"))
+    user_id = session["user_id"]
 
-    return render_template("canvas.html", user_id=user["id"])
+    return render_template("canvas.html", user_id=user_id)
 
 
 @pages_bp.route("/save_fit", methods=["POST"])
 def save_fit_page():
-    if "username" not in session:
+    if "user_id" not in session:
         return jsonify({"success": False, "error": "Не авторизован"})
 
     data = request.get_json()
     if not data:
         return jsonify({"success": False, "error": "Нет данных"})
 
-    try:
-        user = get_user(session["username"])
-        if not user:
-            return jsonify({"success": False, "error": "Пользователь не найден"})
+    user_id = session["user_id"]
 
-        save_fit_settings(user["id"], data)
-        return jsonify({"success": True})
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)})
+    save_fit_settings(user_id, data)
+    return jsonify({"success": True})
 
 
 # -------------------- Utility --------------------
@@ -158,4 +117,4 @@ def save_fit_page():
 @pages_bp.context_processor
 def inject_user():
     """Автоматически передаем username в шаблоны"""
-    return dict(current_user=session.get("username"))
+    return dict(current_user=session.get("user_id"))

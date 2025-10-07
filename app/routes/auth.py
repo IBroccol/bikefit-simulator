@@ -15,11 +15,13 @@ def login():
     user = auth_service.login_user(data["username"], data["password"])
     if user:
         session["user_id"] = user["id"]
+        session["user_role"] = user["role"]
         return jsonify({"message": "login success"})
     return jsonify({"error": "invalid credentials"}), 401
 
-@auth_bp.route("/logout", methods=["POST"])
+@auth_bp.route("/logout", methods=["GET"])
 def logout():
     session.pop("user_id", None)
-    return True
+    return jsonify({"message": "logout success"}), 200
+
 

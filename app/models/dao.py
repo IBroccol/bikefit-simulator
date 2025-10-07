@@ -22,7 +22,7 @@ def create_user(username, password):
 def verify_user(username, password):
     user = get_user(username)
     if user and check_password_hash(user["password_hash"], password):
-        return {"id": user["id"]}
+        return {"id": user["id"], "role": user["role"]}
     return None
 
 def get_user(username):
@@ -60,8 +60,20 @@ def get_bike_geo(bike_id):
 def get_user_bikes(user_id):
     with get_conn() as conn:
         with conn.cursor(row_factory=dict_row) as cur:
-            cur.execute("SELECT DISTINCT model FROM bikes WHERE user_id=%s ORDER BY model", (user_id,))
+            cur.execute("SELECT DISTINCT model FROM bikes WHERE is_public OR user_id=%s ORDER BY model", (user_id,))
             return [row["model"] for row in cur.fetchall()]
+
+def get_pending_bikes():
+    with get_conn() as conn:
+        with conn.cursor(row_factory=dict_row) as cur:
+            cur.execute("SELECT * FROM bikes WHERE NOT is_public AND NOT is_moderated ORDER BY created_at")
+            return cur.fetchall()
+
+def set_privacy(bike_id, is_public):
+    with get_conn() as conn:
+        with conn.cursor(row_factory=dict_row) as cur:
+            cur.execute("UPDATE bikes SET is_public = %s, is_moderated = TRUE WHERE id = %s", (is_public, bike_id))
+            return {"success": True}   
 
 def get_bike_sizes(bike_model):
     with get_conn() as conn:

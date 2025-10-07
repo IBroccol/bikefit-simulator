@@ -1,4 +1,5 @@
 import { Drawer } from './canvas_drawer.js'
+import { distance } from './geometry-helpers.js'
 
 export class Interface {
     constructor(element_ids) {
@@ -32,6 +33,7 @@ export class Interface {
 
         this.bikeSearch.addEventListener("focus", async() => {
             const savedBikes = await this.fetchBikes();
+            console.log(savedBikes)
             this.renderAutocompleteList(this.bikeList, savedBikes, this.bikeSearch, this.onBikeChoise.bind(this));
         });
         this.setupAutocompleteHide(this.bikeList, this.bikeSearch);

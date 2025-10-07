@@ -14,3 +14,9 @@ def get_bike_sizes(model):
 
 def get_bike_id(model, size):
     return dao.get_bike_id(model, size)
+
+def get_pending_bikes():
+    return dao.get_pending_bikes()
+
+def set_privacy(bike_id, is_public):
+    return dao.set_privacy(bike_id, is_public)

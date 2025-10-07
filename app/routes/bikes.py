@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, session
 from app.services import bike_service
+from app.utils.decorators import role_required
 
 bikes_bp = Blueprint("bikes", __name__, url_prefix="/bikes")
 
@@ -36,4 +37,18 @@ def get_bike_id():
 def get_bike_geo():
     bike_id = request.json.get("bike_id")
     result = bike_service.get_bike_geo(bike_id)
+    return jsonify(result)
+
+@bikes_bp.route("/pending", methods=["GET"])
+@role_required("moderator")
+def get_pending_bikes():
+    data = bike_service.get_pending_bikes()
+    return jsonify(data)
+
+@bikes_bp.route("/set_privacy", methods=["POST"])
+@role_required("moderator")
+def set_privacy():
+    bike_id = request.json.get("bike_id")
+    is_public = request.json.get("is_public")
+    result = bike_service.set_privacy(bike_id, is_public)
     return jsonify(result)

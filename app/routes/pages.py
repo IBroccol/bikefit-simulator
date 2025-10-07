@@ -65,7 +65,6 @@ def dashboard():
 
 @pages_bp.route("/add_bike")
 def add_bike_page():
-    print(session, session['user_id'])
     if "user_id" not in session:
         flash("Сначала войдите в систему", "danger")
         return redirect(url_for("pages.login_page"))

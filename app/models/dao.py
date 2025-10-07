@@ -44,8 +44,6 @@ def add_bike(user_id, bike: dict):
 
                 sql = f"INSERT INTO bikes ({col_names}) VALUES ({placeholders})"
 
-                print(sql)
-
                 cur.execute(sql, tuple(bike_with_uid.values()))
                 conn.commit()
                 return {"success": True}
@@ -62,7 +60,7 @@ def get_bike_geo(bike_id):
 def get_user_bikes(user_id):
     with get_conn() as conn:
         with conn.cursor(row_factory=dict_row) as cur:
-            cur.execute("SELECT DISTINCT model FROM bikes WHERE user_id=%s", (user_id,))
+            cur.execute("SELECT DISTINCT model FROM bikes WHERE user_id=%s ORDER BY model", (user_id,))
             return [row["model"] for row in cur.fetchall()]
 
 def get_bike_sizes(bike_model):

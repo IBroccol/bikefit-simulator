@@ -14,7 +14,6 @@ def save_fit():
 def get_fit():
     fit_name = request.json.get("fit_name")
     bike_id = request.json.get("bike_id")
-    print(fit_name, bike_id)
     result = fit_service.get_fit_by_name(fit_name, bike_id)
     return jsonify(result)
 
@@ -43,7 +42,6 @@ def get_fit_names():
 def add_anthro_data():
     user_id = session.get("user_id")
     data = request.json
-    print(data)
     result = fit_service.add_anthro(user_id, data)
     return jsonify(result)
 

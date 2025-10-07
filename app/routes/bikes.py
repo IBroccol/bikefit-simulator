@@ -8,7 +8,6 @@ def add_bike():
     user_id = session.get("user_id")
     data = request.json
     for bike_data in data:
-        print(bike_data)
         result = bike_service.add_bike(user_id, bike_data)
     return jsonify(result)
 

@@ -1,6 +1,7 @@
 import {
     inf,
-    CANVAS_ID
+    CANVAS_ID,
+    MAXSTEP
 } from './constants.js';
 
 import {
@@ -20,6 +21,7 @@ import {
     perpendicular,
     parallel,
     angled_line,
+    middle_perpendicular,
     middle,
     distance,
 } from './geometry-helpers.js';
@@ -66,6 +68,7 @@ class Drawer {
         this.width = rect.width;
         this.height = rect.height;
         this.scale = Math.min(this.width / 2000, this.height / 1750);
+        Figure.MAXSTEP = MAXSTEP * this.scale
     }
 
     scaleData() {
@@ -156,7 +159,7 @@ class Drawer {
         point0 = new Point({ x: this.bike.BottomBracket.x - 100, y: this.bike.BottomBracket.y, dependencies: [this.bike.BottomBracket], visible: false })
         this.bike.SeatTubeLine = angled_line(point0, this.bike.BottomBracket, this.GEOMETRY['seatAngle'], false)
 
-        circle0 = new Circle({ center: this.bike.BottomBracket, radius: this.GEOMETRY['chainstay'], visible: false })
+        circle0 = new Circle({ center: this.bike.BottomBracket, radius: this.GEOMETRY['seatTube'] * 0.8, visible: false })
         point0 = new Point({ x: 0, y: 0, dependencies: [circle0, this.bike.SeatTubeLine], visible: false })
         this.bike.SeatStay = new Segment({ p1: this.bike.RearAxis, p2: point0 })
         this.bike.Chainstay = new Segment({ p1: this.bike.BottomBracket, p2: this.bike.RearAxis })
@@ -290,11 +293,13 @@ class Drawer {
     }
 
     drawKinematics() {
-        let KinematicScale = this.scale * this.GEOMETRY['crankLen'] / 170
+        let KinematicScale = this.GEOMETRY['crankLen'] / 170
 
-        let point0 = new Point({ x: this.bike.BottomBracket.x + 4200 * KinematicScale, y: this.bike.BottomBracket.y - 1500 * KinematicScale, dependencies: [this.bike.BottomBracket], visible: false })
-        let circle0 = new Circle({ center: point0, radius: 850 * KinematicScale, visible: false })
-        let anchor = new Point({ x: point0.x - 1700 * KinematicScale * Math.cos(45 / 180 * Math.PI), y: point0.y + 1700 * KinematicScale * Math.sin(45 / 180 * Math.PI), dependencies: [point0], visible: false })
+        console.log(this.scale)
+
+        let point0 = new Point({ x: this.bike.BottomBracket.x + 1215 * KinematicScale, y: this.bike.BottomBracket.y - 435 * KinematicScale, dependencies: [this.bike.BottomBracket], visible: false })
+        let circle0 = new Circle({ center: point0, radius: 245 * KinematicScale, visible: false })
+        let anchor = new Point({ x: point0.x - 490 * KinematicScale * Math.cos(45 / 180 * Math.PI), y: point0.y + 490 * KinematicScale * Math.sin(45 / 180 * Math.PI), dependencies: [point0], visible: false })
         let line0 = parallel(this.bike.crankLine, point0, false)
 
         let point1 = new Point({ x: inf, y: 0, dependencies: [line0, circle0], visible: false })
@@ -317,8 +322,8 @@ class Drawer {
         line1 = new Line({ p1: point1, p2: anchor, visible: false })
         line2 = new Line({ p1: point2, p2: anchor, visible: false })
 
-        let circle1 = new Circle({ center: point1, radius: 3400 * KinematicScale, visible: false })
-        var circle2 = new Circle({ center: point2, radius: 3400 * KinematicScale, visible: false })
+        let circle1 = new Circle({ center: point1, radius: 980 * KinematicScale, visible: false })
+        var circle2 = new Circle({ center: point2, radius: 980 * KinematicScale, visible: false })
 
         this.bike.KinematicPoint1 = new Point({ x: 0, y: inf, dependencies: [circle1, line1], visible: false })
         this.bike.KinematicPoint2 = new Point({ x: 0, y: inf, dependencies: [circle2, line2], visible: false })
@@ -385,33 +390,18 @@ class Drawer {
         var center_pos = ArcThrough3Points._circumcenter(TorsoMin, TorsoMid, TorsoMax)
         let arc_center = new Point({ x: center_pos.x, y: center_pos.y, dependencies: [this.rider.HipJoint], visible: false })
 
-        function arc_angle(arc_center, point) {
-            let Angle = null
-            if (point.x != arc_center.x) {
-                Angle = Math.atan(Math.abs((point.y - arc_center.y) / (point.x - arc_center.x))) * 180 / Math.PI
-            } else
-                Angle = 0
+        console.log(distance(arc_center, TorsoMid))
+        let shoulderCircle = new Circle({ center: arc_center, radius: distance(arc_center, TorsoMid), visible: false })
 
-            if ((point.x - arc_center.x) > 0) {
-                if ((point.y - arc_center.y) <= 0) //I четверть
-                    Angle = Angle
-                else //IV четверть
-                    Angle = -Angle
-            } else {
-                if ((point.y - arc_center.y) <= 0) //II четверть
-                    Angle = 180 - Angle
-                else //III четверть
-                    Angle = Angle - 180
-            }
-            return Angle
-        }
-
-        this.rider.ShoulderRange = new Arc({ center: arc_center, point: TorsoMid, fromAngle: -arc_angle(arc_center, TorsoMax), toAngle: -arc_angle(arc_center, TorsoMin), visible: false })
-
+        let circle0 = new Circle({ center: this.rider.Hands, radius: (this.ANTROPOMETRICS['upperarm'] + this.ANTROPOMETRICS['forearm']) * 0.999, visible: false })
+        let TorsoMaxValid = new Point({ x: 0, y: 0, dependencies: [circle0, shoulderCircle], visible: false })
+        let temp = middle_perpendicular(TorsoMaxValid, TorsoMin)
+        let TorsoMidValid = new Point({ x: inf, y: temp.y, dependencies: [shoulderCircle, temp], visible: false })
+        this.rider.ShoulderRange = new ArcThrough3Points({ p1: TorsoMaxValid, p2: TorsoMidValid, p3: TorsoMin, visible: false })
 
         this.rider.Shoulder = new Point({ x: this.rider.HipJoint.x + this.ANTROPOMETRICS['torsoMid'] * Math.cos(this.FIT['torsoAngle'] / 180 * Math.PI), y: this.rider.HipJoint.y - this.ANTROPOMETRICS['torsoMid'] * Math.sin(this.FIT['torsoAngle'] / 180 * Math.PI), dependencies: [this.rider.ShoulderRange], moveable: true })
 
-        let circle0 = new Circle({ center: this.rider.HipJoint, radius: this.ANTROPOMETRICS['torsoMax'] * 0.51, visible: false })
+        circle0 = new Circle({ center: this.rider.HipJoint, radius: this.ANTROPOMETRICS['torsoMax'] * 0.51, visible: false })
         let circle1 = new Circle({ center: this.rider.Shoulder, radius: this.ANTROPOMETRICS['torsoMax'] * 0.51, visible: false })
         let point0 = new Point({ x: 0, y: 0, dependencies: [circle0, circle1], visible: false })
         this.rider.Back = new ArcThrough3Points({ p1: this.rider.HipJoint, p2: point0, p3: this.rider.Shoulder })

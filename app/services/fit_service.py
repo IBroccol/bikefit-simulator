@@ -3,7 +3,31 @@ from app.utils.geometry_calc import basic_fit
 from app.services.bike_service import get_bike_geo
 
 def add_anthro(user_id, data):
-    return dao.add_anthropometry(user_id, data)
+    converted = {
+        "hip": data["hip"] * 10,
+        "hipJointOffset": data['height'] * 0.38,
+        "lowerLeg": data["lowerleg"] * 10,
+        "heelToAnkle": data["footLength"] * 3.1,
+        "ankleToMetatarsal": data["footLength"] * 5.9,
+        "heelToMetatarsal": data["footLength"] * 6.7,
+        "toes": data["footLength"] * 2.5,
+        "soleHight": 45,
+
+        "torsoMax": data["torsoLength"] * 10,
+        "torsoMid": data["torsoLength"] * 9.8,
+        "torsoMin": data["torsoLength"] * 8.75,
+        "torsoMidAngle": 45,
+        "torsoMinAngle": 10,
+
+        "upperarm": data["upperarm"] * 10,
+        "forearm": data["forearm"] * 10,
+
+        "neckLen": data["height"] * 0.95,
+        "headR": data["height"] * 0.65,
+    }
+
+    return dao.add_anthropometry(user_id, converted)
+
 
 def get_anthro(user_id):
     return dao.get_anthro_by_user(user_id)

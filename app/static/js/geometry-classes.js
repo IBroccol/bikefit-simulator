@@ -1,9 +1,10 @@
 const scale = 1
 
-import { MAXSTEP, inf } from './constants.js';
+import { MAXSTEP } from './constants.js';
 
 export class Figure {
     static allFigures = [];
+    MAXSTEP = MAXSTEP
 
     constructor(id, color = null, visible = true, moveable = false, dependencies = [], hidden = false) {
         this.id = id;
@@ -341,7 +342,7 @@ export class Point extends Figure {
 
         const initialPosition = new paper.Point(this.x, this.y)
         const targetstep = Math.sqrt((this.x - targetPoint.x) ** 2 + (this.y - targetPoint.y) ** 2);
-        const step = Math.min(MAXSTEP, targetstep);
+        const step = Math.min(Figure.MAXSTEP, targetstep);
 
         if (targetstep > 0)
             this.update((targetPoint.x - this.x) * step / targetstep, (targetPoint.y - this.y) * step / targetstep);
@@ -443,15 +444,16 @@ export class CircleByCenterEdge extends Figure {
 
         if (this.shape) {
             this.shape.position = centerPos;
-            this.shape.removeSegments(); // очищаем старую окружность
-            this.shape.add(new paper.Path.Circle({
-                center: centerPos,
-                radius: this.radius,
-                strokeColor: this.color,
-                visible: this.visible && !this.hidden
-            }).segments);
+
+            this.shape.bounds = new paper.Rectangle(
+                centerPos.subtract([this.radius, this.radius]),
+                new paper.Size(this.radius * 2, this.radius * 2)
+            );
+
+            this.shape.strokeColor = this.color;
             this.shape.visible = this.visible && !this.hidden;
         }
+
 
         this.update_dependents();
     }

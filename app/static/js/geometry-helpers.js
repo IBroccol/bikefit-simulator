@@ -110,13 +110,17 @@ export function angled_line(p1, p2, angleDeg, visible = true, dash = false) {
     return new Line({ p1: p2, p2: p3, visible: visible, dash: dash });
 }
 
-export function middle(p1, p2) {
+export function middle_perpendicular(p1, p2) {
     let circle0 = new CircleByCenterEdge({ center: p1, edge: p2, visible: false })
-    let circle1 = new CircleByCenterEdge({ center: p2, edge: p2, visible: false })
+    let circle1 = new CircleByCenterEdge({ center: p2, edge: p1, visible: false })
 
     let point0 = new Point({ x: (p1.x + p2.x) / 2 + 0.1 * (p2.y - p1.y), y: (p1.y + p2.y) / 2 - 0.1 * (p2.x - p1.x), dependencies: [circle0, circle1], visible: false })
     let point1 = new Point({ x: (p1.x + p2.x) / 2 - 0.1 * (p2.y - p1.y), y: (p1.y + p2.y) / 2 + 0.1 * (p2.x - p1.x), dependencies: [circle0, circle1], visible: false })
-    let line0 = new Line({ p1: point0, p2: point1, visible: false })
+    return new Line({ p1: point0, p2: point1, visible: false })
+}
+
+export function middle(p1, p2) {
+    let line0 = middle_perpendicular(p1, p2)
     let line1 = new Line({ p1: p1, p2: p2, visible: false })
     return new Point({ x: 0, y: 0, dependencies: [line0, line1] })
 }

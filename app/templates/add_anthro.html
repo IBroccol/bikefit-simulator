@@ -91,30 +91,16 @@
         </div>
 
         <form id="anthroForm">
-            <h2>🦵 Ноги и стопа</h2>
-            <input type="number" step="0.1" name="hip" placeholder="hip">
-            <input type="number" step="0.1" name="hipJointOffset" placeholder="hipJointOffset">
-            <input type="number" step="0.1" name="lowerLeg" placeholder="lowerLeg">
-            <input type="number" step="0.1" name="heelToAnkle" placeholder="heelToAnkle">
-            <input type="number" step="0.1" name="ankleToMetatarsal" placeholder="ankleToMetatarsal">
-            <input type="number" step="0.1" name="heelToMetatarsal" placeholder="heelToMetatarsal">
-            <input type="number" step="0.1" name="toes" placeholder="toes">
-            <input type="number" step="0.1" name="soleHight" placeholder="soleHight">
+            <h2>📏 Основные параметры</h2>
+            <input type="number" step="1" name="height" placeholder="Рост, см" required>
+            <input type="number" step="0.1" name="hip" placeholder="Длина бедра (hip→knee), см" required>
+            <input type="number" step="0.1" name="lowerleg" placeholder="Длина голени (knee→ankle), см" required>
+            <input type="number" step="0.1" name="footLength" placeholder="Длина стопы, см" required>
 
-            <h2>🧍 Туловище</h2>
-            <input type="number" step="0.1" name="torsoMax" placeholder="torsoMax">
-            <input type="number" step="0.1" name="torsoMid" placeholder="torsoMid">
-            <input type="number" step="0.1" name="torsoMin" placeholder="torsoMin">
-            <input type="number" step="0.1" name="torsoMidAngle" placeholder="torsoMidAngle">
-            <input type="number" step="0.1" name="torsoMinAngle" placeholder="torsoMinAngle">
-
-            <h2>💪 Руки</h2>
-            <input type="number" step="0.1" name="upperarm" placeholder="upperarm">
-            <input type="number" step="0.1" name="forearm" placeholder="forearm">
-
-            <h2>🦴 Шея и голова</h2>
-            <input type="number" step="0.1" name="neckLen" placeholder="neckLen">
-            <input type="number" step="0.1" name="headR" placeholder="headR">
+            <h2>🧍 Верх тела</h2>
+            <input type="number" step="0.1" name="torsoLength" placeholder="Длина туловища (таз→плечи), см" required>
+            <input type="number" step="0.1" name="upperarm" placeholder="Длина плеча (shoulder→elbow), см" required>
+            <input type="number" step="0.1" name="forearm" placeholder="Длина предплечья (elbow→wrist), см" required>
 
             <button type="submit">Добавить</button>
         </form>

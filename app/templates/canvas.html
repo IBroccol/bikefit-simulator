@@ -90,9 +90,8 @@
         }
 
         .reset-btn {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
+            margin-top: 15px;
+            align-self: flex-end;
         }
 
         .autocomplete-item {
@@ -113,7 +112,7 @@
             <div class="input-group">
                 <input type="text" placeholder="Search" id="bikeSearch" readonly>
                 <div id="bikeList" class="autocomplete-list" style="border:1px solid #ccc; display:none; max-height:150px; overflow-y:auto;"></div>
-                <select>
+                <select id="sizeSelect">
                     <option>Select size</option>
                 </select>
             </div>
@@ -149,7 +148,20 @@
     </div>
     
     <!-- Подключаем внешний JS -->
-    <script type="module" src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+        window.element_ids = {
+            "canvas": "myCanvas",
+            "bikeSearch": "bikeSearch",
+            "bikeList": "bikeList",
+            "sizeSelect": "sizeSelect",
+            "fitSearch": "fitSearch",
+            "fitList": "fitList",
+            "fitInput": "fitInput",
+            "saveButton": "saveBtn",
+            "resetButton": "resetBtn"
+        }
+    </script>
+    <script type="module" src="{{ url_for('static', filename='js/canvas.js') }}"></script>
 
 </body>
 </html>

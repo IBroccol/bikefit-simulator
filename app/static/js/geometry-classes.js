@@ -6,7 +6,8 @@ export class Figure {
     static allFigures = [];
     MAXSTEP = MAXSTEP
 
-    constructor(id, color = null, visible = true, moveable = false, dependencies = [], hidden = false) {
+    constructor(scope, id, color = null, visible = true, moveable = false, dependencies = [], hidden = false) {
+        this.scope = scope;
         this.id = id;
         this.color = color ? color : (moveable ? 'blue' : 'grey');
         this.visible = visible;
@@ -82,7 +83,7 @@ export class Figure {
         return point;
     }
 
-    static intersection(f1, f2, lastPos) {
+    static intersection(scope, f1, f2, lastPos) {
         const EPS = 1e-9;
         const isCircle = f => (f instanceof Circle) || (f instanceof CircleByCenterEdge);
         const isLine = f => (f instanceof Line);
@@ -134,11 +135,11 @@ export class Figure {
             const py = C1.cy + (a * dy) / d;
 
             if (h < EPS) {
-                return [new paper.Point(px, py)]; // касание
+                return [new scope.Point(px, py)]; // касание
             }
             return [
-                new paper.Point(px + h * (-dy) / d, py + h * (dx) / d),
-                new paper.Point(px - h * (-dy) / d, py - h * (dx) / d),
+                new scope.Point(px + h * (-dy) / d, py + h * (dx) / d),
+                new scope.Point(px - h * (-dy) / d, py - h * (dx) / d),
             ];
         }
 
@@ -164,7 +165,7 @@ export class Figure {
             if (L1.isSegment && (t < -EPS || t > 1 + EPS)) return [];
             if (L2.isSegment && (u < -EPS || u > 1 + EPS)) return [];
 
-            return [new paper.Point(L1.x1 + t * r1x, L1.y1 + t * r1y)];
+            return [new scope.Point(L1.x1 + t * r1x, L1.y1 + t * r1y)];
         }
 
         // ---- Line/Segment ⨯ Circle ----
@@ -192,7 +193,7 @@ export class Figure {
 
             function pushIfValid(t) {
                 if (L.isSegment && (t < -EPS || t > 1 + EPS)) return;
-                out.push(new paper.Point(L.x1 + t * dx, L.y1 + t * dy));
+                out.push(new scope.Point(L.x1 + t * dx, L.y1 + t * dy));
             }
             pushIfValid(t1);
             if (Math.abs(t2 - t1) > EPS) pushIfValid(t2);
@@ -208,8 +209,8 @@ export class Figure {
 export class Point extends Figure {
     static _id_counter = 0;
 
-    constructor({ x, y, radius = 5, hitbox_radius = 15, color = null, visible = true, moveable = false, dependencies = [] }) {
-        super(`Point${Point._id_counter}`, color, visible, moveable, dependencies);
+    constructor({ scope, x, y, radius = 5, hitbox_radius = 15, color = null, visible = true, moveable = false, dependencies = [] }) {
+        super(scope, `Point${Point._id_counter}`, color, visible, moveable, dependencies);
         Point._id_counter++;
         this.x = x;
         this.y = y;
@@ -222,7 +223,7 @@ export class Point extends Figure {
 
         // Рисуем основную точку только если visible === true
         if (visible) {
-            this.shape = new paper.Path.Circle({
+            this.shape = new this.scope.Path.Circle({
                 center: [x, y],
                 radius: radius,
                 fillColor: this.color,
@@ -233,10 +234,10 @@ export class Point extends Figure {
         // Hitbox нужен только если точка moveable
         this.hitbox = null;
         if (this.moveable) {
-            this.hitbox = new paper.Path.Circle({
+            this.hitbox = new this.scope.Path.Circle({
                 center: [x, y],
                 radius: this.radius + this.hitbox_radius,
-                fillColor: new paper.Color(0, 0, 0, 0.025),
+                fillColor: new this.scope.Color(0, 0, 0, 0.025),
                 visible: true
             });
 
@@ -265,7 +266,7 @@ export class Point extends Figure {
         this.y += delta_y
 
         // --- 2. вычисляем новые координаты (НЕ зависит от this.shape)
-        let newPos = new paper.Point(this.x, this.y);
+        let newPos = new this.scope.Point(this.x, this.y);
 
         if (this.dependencies.length === 1) {
             newPos = this.dependencies[0].closest_valid(newPos);
@@ -276,7 +277,7 @@ export class Point extends Figure {
 
             for (let i = 0; i < this.dependencies.length; i++) {
                 for (let j = i + 1; j < this.dependencies.length; j++) {
-                    const inters = Figure.intersection(this.dependencies[i], this.dependencies[j]);
+                    const inters = Figure.intersection(this.scope, this.dependencies[i], this.dependencies[j]);
                     if (!inters || inters.length === 0) continue;
 
                     if (first_iter) {
@@ -297,14 +298,14 @@ export class Point extends Figure {
             }
 
             if (allIntersections.size > 0) {
-                const pos = new paper.Point(this.x, this.y);
+                const pos = new this.scope.Point(this.x, this.y);
                 const inters = [...allIntersections];
                 inters.sort((a, b) => a.getDistance(pos) - b.getDistance(pos));
                 newPos = inters[0];
                 if (this.hidden) this.hide(false);
             } else {
                 if (!this.hidden) {
-                    newPos = new paper.Point(this.init_x, this.init_y)
+                    newPos = new this.scope.Point(this.init_x, this.init_y)
                     this.hide(true);
                 }
             }
@@ -340,7 +341,7 @@ export class Point extends Figure {
     move(targetPoint) {
         if (!this.moveable || !this.shape) return;
 
-        const initialPosition = new paper.Point(this.x, this.y)
+        const initialPosition = new this.scope.Point(this.x, this.y)
         const targetstep = Math.sqrt((this.x - targetPoint.x) ** 2 + (this.y - targetPoint.y) ** 2);
         const step = Math.min(Figure.MAXSTEP, targetstep);
 
@@ -355,8 +356,8 @@ export class Point extends Figure {
 export class Circle extends Figure {
     static _id_counter = 0;
 
-    constructor({ center, radius, color = null, visible = true, moveable = false, dependencies = [] }) {
-        super(`Circle${Circle._id_counter}`, color, visible, moveable, [center, ...dependencies]);
+    constructor({ scope, center, radius, color = null, visible = true, moveable = false, dependencies = [] }) {
+        super(scope, `Circle${Circle._id_counter}`, color, visible, moveable, [center, ...dependencies]);
         Circle._id_counter++;
 
         this.center = center; // объект Point
@@ -365,7 +366,7 @@ export class Circle extends Figure {
         // Создаём Path только если реально нужно отрисовывать
         this.shape = null;
         if (visible) {
-            this.shape = new paper.Path.Circle({
+            this.shape = new this.scope.Path.Circle({
                 center: [this.center.x, this.center.y],
                 radius: radius,
                 strokeColor: this.color,
@@ -378,7 +379,7 @@ export class Circle extends Figure {
 
     update() {
         if (this.shape) {
-            this.shape.position = new paper.Point(this.center.x, this.center.y);
+            this.shape.position = new this.scope.Point(this.center.x, this.center.y);
             this.shape.visible = this.visible && !this.hidden;
         }
         this.update_dependents();
@@ -390,7 +391,7 @@ export class Circle extends Figure {
         this.center.y = targetPoint.y;
 
         if (this.shape) {
-            this.shape.position = new paper.Point(this.center.x, this.center.y);
+            this.shape.position = new this.scope.Point(this.center.x, this.center.y);
         }
 
         this.update(this.hidden);
@@ -398,11 +399,11 @@ export class Circle extends Figure {
 
     closest_valid(point) {
         // используем только математику, не shape
-        const centerPt = new paper.Point(this.center.x, this.center.y);
+        const centerPt = new this.scope.Point(this.center.x, this.center.y);
         const vec = point.subtract(centerPt);
 
         if (vec.length === 0) {
-            return centerPt.add(new paper.Point(this.radius, 0));
+            return centerPt.add(new this.scope.Point(this.radius, 0));
         } else {
             return centerPt.add(vec.normalize().multiply(this.radius));
         }
@@ -412,20 +413,20 @@ export class Circle extends Figure {
 export class CircleByCenterEdge extends Figure {
     static _id_counter = 0;
 
-    constructor({ center, edge, color = null, visible = true, moveable = false, dependencies = [] }) {
-        super(`CircleByCenterEdge${CircleByCenterEdge._id_counter}`, color, visible, moveable, [center, edge, ...dependencies]);
+    constructor({ scope, center, edge, color = null, visible = true, moveable = false, dependencies = [] }) {
+        super(scope, `CircleByCenterEdge${CircleByCenterEdge._id_counter}`, color, visible, moveable, [center, edge, ...dependencies]);
         CircleByCenterEdge._id_counter++;
 
         this.center = center;
         this.edge = edge;
 
         this.radius = center.x !== undefined && edge.x !== undefined ?
-            new paper.Point(center.x, center.y).getDistance(new paper.Point(edge.x, edge.y)) :
+            new this.scope.Point(center.x, center.y).getDistance(new this.scope.Point(edge.x, edge.y)) :
             0;
 
         this.shape = null;
         if (visible) {
-            this.shape = new paper.Path.Circle({
+            this.shape = new this.scope.Path.Circle({
                 center: [this.center.x, this.center.y],
                 radius: this.radius,
                 strokeColor: this.color,
@@ -437,17 +438,17 @@ export class CircleByCenterEdge extends Figure {
     }
 
     update() {
-        const centerPos = new paper.Point(this.center.x, this.center.y);
-        const edgePos = new paper.Point(this.edge.x, this.edge.y);
+        const centerPos = new this.scope.Point(this.center.x, this.center.y);
+        const edgePos = new this.scope.Point(this.edge.x, this.edge.y);
 
         this.radius = centerPos.getDistance(edgePos);
 
         if (this.shape) {
             this.shape.position = centerPos;
 
-            this.shape.bounds = new paper.Rectangle(
+            this.shape.bounds = new this.scope.Rectangle(
                 centerPos.subtract([this.radius, this.radius]),
-                new paper.Size(this.radius * 2, this.radius * 2)
+                new this.scope.Size(this.radius * 2, this.radius * 2)
             );
 
             this.shape.strokeColor = this.color;
@@ -462,8 +463,8 @@ export class CircleByCenterEdge extends Figure {
 export class Line extends Figure {
     static _id_counter = 0;
 
-    constructor({ p1, p2, width = 1, color = null, visible = true, dash = false, moveable = false, dependencies = [] }) {
-        super(`Line${Line._id_counter}`, color, visible, moveable, [p1, p2, ...dependencies]);
+    constructor({ scope, p1, p2, width = 1, color = null, visible = true, dash = false, moveable = false, dependencies = [] }) {
+        super(scope, `Line${Line._id_counter}`, color, visible, moveable, [p1, p2, ...dependencies]);
         Line._id_counter++;
 
         this.p1 = p1;
@@ -474,12 +475,12 @@ export class Line extends Figure {
 
         this.shape = null;
         if (visible) {
-            const dir = new paper.Point(this.p2.x - this.p1.x, this.p2.y - this.p1.y).normalize();
+            const dir = new this.scope.Point(this.p2.x - this.p1.x, this.p2.y - this.p1.y).normalize();
             const big = 2000;
-            const from = new paper.Point(this.p1.x, this.p1.y).subtract(dir.multiply(big));
-            const to = new paper.Point(this.p2.x, this.p2.y).add(dir.multiply(big));
+            const from = new this.scope.Point(this.p1.x, this.p1.y).subtract(dir.multiply(big));
+            const to = new this.scope.Point(this.p2.x, this.p2.y).add(dir.multiply(big));
 
-            this.shape = new paper.Path.Line({
+            this.shape = new this.scope.Path.Line({
                 from: from,
                 to: to,
                 strokeColor: this.color,
@@ -493,10 +494,10 @@ export class Line extends Figure {
     }
 
     update() {
-        const dir = new paper.Point(this.p2.x - this.p1.x, this.p2.y - this.p1.y).normalize();
+        const dir = new this.scope.Point(this.p2.x - this.p1.x, this.p2.y - this.p1.y).normalize();
         const big = 2000;
-        const from = new paper.Point(this.p1.x, this.p1.y).subtract(dir.multiply(big));
-        const to = new paper.Point(this.p2.x, this.p2.y).add(dir.multiply(big));
+        const from = new this.scope.Point(this.p1.x, this.p1.y).subtract(dir.multiply(big));
+        const to = new this.scope.Point(this.p2.x, this.p2.y).add(dir.multiply(big));
 
         if (this.shape) {
             this.shape.firstSegment.point = from;
@@ -508,8 +509,8 @@ export class Line extends Figure {
     }
 
     closest_valid(point) {
-        const a = new paper.Point(this.p1.x, this.p1.y);
-        const b = new paper.Point(this.p2.x, this.p2.y);
+        const a = new this.scope.Point(this.p1.x, this.p1.y);
+        const b = new this.scope.Point(this.p2.x, this.p2.y);
         const ab = b.subtract(a);
 
         const ap = point.subtract(a);
@@ -520,21 +521,21 @@ export class Line extends Figure {
 }
 
 export class Segment extends Line {
-    constructor({ p1, p2, width = 1, color = null, visible = true, dash = false, moveable = false, dependencies = [] }) {
-        super({ p1, p2, width, color, visible, dash, moveable, dependencies });
+    constructor({ scope, p1, p2, width = 1, color = null, visible = true, dash = false, moveable = false, dependencies = [] }) {
+        super({ scope, p1, p2, width, color, visible, dash, moveable, dependencies });
 
         // для сегмента сразу обрезаем линию до p1–p2
         if (this.shape) {
-            this.shape.firstSegment.point = new paper.Point(this.p1.x, this.p1.y);
-            this.shape.lastSegment.point = new paper.Point(this.p2.x, this.p2.y);
+            this.shape.firstSegment.point = new this.scope.Point(this.p1.x, this.p1.y);
+            this.shape.lastSegment.point = new this.scope.Point(this.p2.x, this.p2.y);
         }
 
         this.update();
     }
 
     update() {
-        const from = new paper.Point(this.p1.x, this.p1.y);
-        const to = new paper.Point(this.p2.x, this.p2.y);
+        const from = new this.scope.Point(this.p1.x, this.p1.y);
+        const to = new this.scope.Point(this.p2.x, this.p2.y);
 
         if (this.shape) {
             this.shape.firstSegment.point = from;
@@ -546,8 +547,8 @@ export class Segment extends Line {
     }
 
     closest_valid(point) {
-        const a = new paper.Point(this.p1.x, this.p1.y);
-        const b = new paper.Point(this.p2.x, this.p2.y);
+        const a = new this.scope.Point(this.p1.x, this.p1.y);
+        const b = new this.scope.Point(this.p2.x, this.p2.y);
         const ab = b.subtract(a);
 
         const ap = point.subtract(a);
@@ -563,8 +564,8 @@ export class Segment extends Line {
 export class Arc extends Figure {
     static _id_counter = 0;
 
-    constructor({ center, point, fromAngle = 0, toAngle = 90, color = null, visible = true, moveable = false, dependencies = [] }) {
-        super(`Arc${Arc._id_counter}`, color, visible, moveable, [center, point, ...dependencies]);
+    constructor({ scope, center, point, fromAngle = 0, toAngle = 90, color = null, visible = true, moveable = false, dependencies = [] }) {
+        super(scope, `Arc${Arc._id_counter}`, color, visible, moveable, [center, point, ...dependencies]);
         Arc._id_counter++;
 
         this.center = center;
@@ -576,7 +577,7 @@ export class Arc extends Figure {
 
         this.shape = null;
         if (visible) {
-            this.shape = new paper.Path();
+            this.shape = new this.scope.Path();
             this.shape.strokeColor = this.color;
         }
 
@@ -585,7 +586,7 @@ export class Arc extends Figure {
 
     _point_on_circle(angleDeg, radius) {
         const rad = angleDeg * Math.PI / 180;
-        return new paper.Point(
+        return new this.scope.Point(
             this.center.x + radius * Math.cos(rad),
             this.center.y + radius * Math.sin(rad)
         );
@@ -623,7 +624,7 @@ export class Arc extends Figure {
     }
 
     closest_valid(point) {
-        const centerPt = new paper.Point(this.center.x, this.center.y);
+        const centerPt = new this.scope.Point(this.center.x, this.center.y);
         const vec = point.subtract(centerPt);
 
         if (vec.length === 0) {
@@ -658,8 +659,8 @@ export class Arc extends Figure {
 export class ArcThrough3Points extends Figure {
     static _id_counter = 0;
 
-    constructor({ p1, p2, p3, color = null, visible = true, moveable = false, dependencies = [] }) {
-        super(`ArcThrough3Points${ArcThrough3Points._id_counter++}`, color, visible, moveable, [p1, p2, p3, ...dependencies]);
+    constructor({ scope, p1, p2, p3, color = null, visible = true, moveable = false, dependencies = [] }) {
+        super(scope, `ArcThrough3Points${ArcThrough3Points._id_counter++}`, color, visible, moveable, [p1, p2, p3, ...dependencies]);
 
         this.p1 = p1;
         this.p2 = p2;
@@ -667,7 +668,7 @@ export class ArcThrough3Points extends Figure {
 
         this.shape = null;
         if (visible) {
-            this.shape = new paper.Path({
+            this.shape = new this.scope.Path({
                 strokeColor: this.color,
                 visible: true
             });
@@ -679,10 +680,10 @@ export class ArcThrough3Points extends Figure {
     update() {
         if (this.shape) {
             this.shape.removeSegments();
-            this.shape.add(new paper.Point(this.p1.x, this.p1.y));
+            this.shape.add(new this.scope.Point(this.p1.x, this.p1.y));
             this.shape.arcTo(
-                new paper.Point(this.p2.x, this.p2.y),
-                new paper.Point(this.p3.x, this.p3.y)
+                new this.scope.Point(this.p2.x, this.p2.y),
+                new this.scope.Point(this.p3.x, this.p3.y)
             );
             this.shape.visible = this.visible && !this.hidden;
         }
@@ -700,13 +701,13 @@ export class ArcThrough3Points extends Figure {
     }
 
     closest_valid(point) {
-        const center = ArcThrough3Points._circumcenter(this.p1, this.p2, this.p3);
+        const center = ArcThrough3Points._circumcenter(this.scope, this.p1, this.p2, this.p3);
         if (!center) return null;
 
-        const radius = center.getDistance(new paper.Point(this.p1.x, this.p1.y));
+        const radius = center.getDistance(new this.scope.Point(this.p1.x, this.p1.y));
         const vec = point.subtract(center);
 
-        if (vec.length === 0) return new paper.Point(this.p1.x, this.p1.y);
+        if (vec.length === 0) return new this.scope.Point(this.p1.x, this.p1.y);
 
         const projected = center.add(vec.normalize(radius));
 
@@ -735,13 +736,13 @@ export class ArcThrough3Points extends Figure {
         if (inArc) {
             return projected;
         } else {
-            const p1Pt = new paper.Point(this.p1.x, this.p1.y);
-            const p3Pt = new paper.Point(this.p3.x, this.p3.y);
+            const p1Pt = new this.scope.Point(this.p1.x, this.p1.y);
+            const p3Pt = new this.scope.Point(this.p3.x, this.p3.y);
             return projected.getDistance(p1Pt) < projected.getDistance(p3Pt) ? p1Pt : p3Pt;
         }
     }
 
-    static _circumcenter(a, b, c) {
+    static _circumcenter(scope, a, b, c) {
         const x1 = a.x,
             y1 = a.y;
         const x2 = b.x,
@@ -759,15 +760,15 @@ export class ArcThrough3Points extends Figure {
         const ux = (x1s * (y2 - y3) + x2s * (y3 - y1) + x3s * (y1 - y2)) / D;
         const uy = (x1s * (x3 - x2) + x2s * (x1 - x3) + x3s * (x2 - x1)) / D;
 
-        return new paper.Point(ux, uy);
+        return new scope.Point(ux, uy);
     }
 }
 
 export class Angle extends Figure {
     static _id_counter = 0;
 
-    constructor({ p1, p2, p3, radius = 15, color = 'green', visible = true, draw_segments = true, dependencies = [], valid_range = null }) {
-        super(`Angle${Angle._id_counter++}`, color, visible, false, [p1, p2, p3, ...dependencies]);
+    constructor({ scope, p1, p2, p3, radius = 15, color = 'green', visible = true, draw_segments = true, dependencies = [], valid_range = null }) {
+        super(scope, `Angle${Angle._id_counter++}`, color, visible, false, [p1, p2, p3, ...dependencies]);
 
         this.p1 = p1;
         this.p2 = p2; // вершина угла
@@ -785,11 +786,11 @@ export class Angle extends Figure {
         this.label = "";
 
         if (visible) {
-            this.arc = new paper.Path.Arc({
+            this.arc = new this.scope.Path.Arc({
                 strokeColor: this.color,
                 visible: true
             });
-            this.label = new paper.PointText({
+            this.label = new this.scope.PointText({
                 content: '',
                 fillColor: this.color,
                 fontSize: 14,
@@ -799,8 +800,8 @@ export class Angle extends Figure {
         }
 
         if (draw_segments) {
-            new Segment({ p1: p1, p2: p2, dash: true, color: 'lightgrey' })
-            new Segment({ p1: p3, p2: p2, dash: true, color: 'lightgrey' })
+            new Segment({ scope: this.scope, p1: p1, p2: p2, dash: true, color: 'lightgrey' })
+            new Segment({ scope: this.scope, p1: p3, p2: p2, dash: true, color: 'lightgrey' })
         }
 
         this.update();
@@ -817,9 +818,9 @@ export class Angle extends Figure {
     }
 
     update() {
-        const A = new paper.Point(this.p1.x, this.p1.y);
-        const O = new paper.Point(this.p2.x, this.p2.y);
-        const B = new paper.Point(this.p3.x, this.p3.y);
+        const A = new this.scope.Point(this.p1.x, this.p1.y);
+        const O = new this.scope.Point(this.p2.x, this.p2.y);
+        const B = new this.scope.Point(this.p3.x, this.p3.y);
 
         const v1 = A.subtract(O).normalize();
         const v2 = B.subtract(O).normalize();
@@ -849,7 +850,7 @@ export class Angle extends Figure {
         const from = O.add(v1.multiply(this.radius));
         const to = O.add(v2.multiply(this.radius));
         const mid = O.add(
-            new paper.Point(
+            new this.scope.Point(
                 Math.cos(ang1 + dAng / 2),
                 Math.sin(ang1 + dAng / 2)
             ).multiply(this.radius)
@@ -867,7 +868,7 @@ export class Angle extends Figure {
         if (this.label) {
             this.label.content = angleDeg.toFixed(1) + "°";
             this.label.position = O.add(
-                new paper.Point(
+                new this.scope.Point(
                     Math.cos(ang1 + dAng / 2),
                     Math.sin(ang1 + dAng / 2)
                 ).multiply(this.radius + this.label.fontSize * 1.5)

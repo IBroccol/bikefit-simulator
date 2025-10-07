@@ -95,6 +95,15 @@ def canvas_page():
 
     return render_template("canvas.html", user_id=user_id)
 
+@pages_bp.route("/compare")
+def compare_page():
+    if "user_id" not in session:
+        flash("Сначала войдите в систему", "danger")
+        return redirect(url_for("pages.login_page"))
+
+    user_id = session["user_id"]
+
+    return render_template("compare.html", user_id=user_id)
 
 @pages_bp.route("/save_fit", methods=["POST"])
 def save_fit_page():

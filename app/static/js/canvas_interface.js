@@ -25,6 +25,7 @@ export class Interface {
 
         this.setupEventListeners()
         this.getAnthro()
+        this.fetchBikes()
     }
 
     setupEventListeners() {
@@ -32,9 +33,9 @@ export class Interface {
         this.resetButton.addEventListener("click", () => this.drawer.reset());
 
         this.bikeSearch.addEventListener("focus", async() => {
-            const savedBikes = await this.fetchBikes();
-            console.log(savedBikes)
-            this.renderAutocompleteList(this.bikeList, savedBikes, this.bikeSearch, this.onBikeChoise.bind(this));
+            // const savedBikes = await this.fetchBikes();
+            console.log(this.savedBikes)
+            this.renderAutocompleteList(this.bikeList, this.savedBikes, this.bikeSearch, this.onBikeChoise.bind(this));
         });
         this.setupAutocompleteHide(this.bikeList, this.bikeSearch);
 
@@ -126,10 +127,10 @@ export class Interface {
             });
 
             if (!response.ok) throw new Error("Ошибка при получении данных");
-            return await response.json();
+            this.savedBikes = await response.json();
         } catch (error) {
             console.error("Ошибка:", error);
-            return [];
+            this.savedBikes = [];
         }
     }
 

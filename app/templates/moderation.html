@@ -4,137 +4,226 @@
     <meta charset="UTF-8">
     <title>Модерация велосипедов</title>
     <style>
-    body {
-        margin: 0;
-        font-family: "Segoe UI", Arial, sans-serif;
-        background: #f4f6f8;
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-        min-height: 100vh;
-        padding: 20px;
-    }
+        /* --- Общие стили --- */
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f4f6f8;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
 
-    .container {
-        width: 100%;
-        max-width: 1200px;
-    }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background: #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            flex-shrink: 0; /* header не сжимается */
+        }
 
-    h1 {
-        text-align: center;
-        color: #333;
-        margin-bottom: 30px;
-    }
 
-    #pending-bikes {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-        justify-content: center;
-    }
+        header h1 {
+            margin: 0;
+            font-size: 22px;
+            color: #333;
+        }
 
-    .bike-card {
-        background: #ffffff;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 6px 15px rgba(0,0,0,0.1);
-        width: 280px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
+        header button {
+            background: #1e6bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 14px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s, transform 0.1s;
+        }
 
-    .bike-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-    }
+        header button:hover {
+            background: #1557cc;
+            transform: scale(0.97);
+        }
 
-    .bike-card h3 {
-        margin: 0;
-        font-size: 18px;
-        color: #1e6bff;
-    }
+        /* --- Основной контейнер --- */
+        #moderation-container {
+            display: flex;
+            gap: 30px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            flex: 1; /* занимает оставшееся место под header */
+            width: 90%;
+            height: 90%;
+            margin: 20px auto;
+        }
 
-    .bike-card p {
-        margin: 2px 0;
-        font-size: 14px;
-        color: #555;
-    }
+        /* --- Левая колонка: список велосипедов --- */
+        #pending-bikes {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+            padding-right: 10px;
+            border-right: 1px solid #ddd;
+        }
 
-    .bike-card .geometry {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        font-size: 13px;
-        color: #444;
-        margin-top: 5px;
-    }
+        .bike-item {
+            background: #ffffff;
+            padding: 15px 18px;
+            border-radius: 10px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
 
-    .bike-card .geometry span {
-        background: #f1f3f5;
-        padding: 3px 6px;
-        border-radius: 4px;
-    }
+        .bike-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+        }
 
-    .bike-card .actions {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 15px;
-        gap: 10px;
-    }
+        .bike-item.active {
+            border: 2px solid #1e6bff;
+            box-shadow: 0 0 10px rgba(30,107,255,0.3);
+        }
 
-    .bike-card button {
-        flex: 1;
-        padding: 8px 12px;
-        border: none;
-        border-radius: 6px;
-        font-size: 14px;
-        cursor: pointer;
-        transition: background 0.2s, transform 0.1s;
-    }
+        .bike-item h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #1e6bff;
+        }
 
-    .bike-card .approve-btn {
-        background-color: #28a745;
-        color: #fff;
-    }
+        .bike-item p {
+            margin: 3px 0;
+            font-size: 14px;
+            color: #555;
+        }
 
-    .bike-card .approve-btn:hover {
-        background-color: #218838;
-        transform: scale(0.98);
-    }
+        .empty-message {
+            text-align: center;
+            color: #666;
+            font-size: 16px;
+            margin-top: 40px;
+        }
 
-    .bike-card .reject-btn {
-        background-color: #dc3545;
-        color: #fff;
-    }
+        .bike-item .approve-btn,
+        .bike-item .reject-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            margin-top: 8px;
+        }
 
-    .bike-card .reject-btn:hover {
-        background-color: #c82333;
-        transform: scale(0.98);
-    }
+        .bike-item .approve-btn {
+            background-color: #28a745;
+            color: #fff;
+        }
 
-    .empty-message {
-        text-align: center;
-        color: #666;
-        font-size: 16px;
-        margin-top: 50px;
-    }
+        .bike-item .approve-btn:hover {
+            background-color: #218838;
+            transform: scale(0.98);
+        }
+
+        .bike-item .reject-btn {
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+        .bike-item .reject-btn:hover {
+            background-color: #c82333;
+            transform: scale(0.98);
+        }
+
+        /* --- Правая колонка: canvas + кнопки размеров --- */
+        #preview-section {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 15px;
+            height: 100%;
+        }
+
+        #bike-canvas {
+            border: 1px solid #ccc;
+            border-radius: 12px;
+            background: #fafafa;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            width: 100%;
+            flex-grow: 1;
+            display: block;
+        }
+
+        .size-buttons-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .size-btn {
+            background-color: #f1f3f5;
+            color: #333;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .size-btn:hover {
+            background-color: #e2e6ea;
+            transform: scale(1.03);
+        }
+
+        .size-btn.active {
+            background-color: #1e6bff;
+            color: #fff;
+            transform: scale(1.05);
+        }
     </style>
-
 </head>
 <body>
+    <!-- Верхняя панель с кнопкой "В меню" -->
     <header>
         <h1>Модерация велосипедов</h1>
         <button onclick="window.location.href='/dashboard'">В меню</button>
     </header>
 
-    <main>
-        <section id="pending-bikes">
+    <!-- Основной контейнер -->
+    <main id="moderation-container">
+        <!-- Левая колонка: список моделей -->
+        <aside id="pending-bikes">
             <p class="empty-message">Загрузка моделей...</p>
+        </aside>
+
+        <!-- Правая колонка: canvas + кнопки размеров -->
+        <section id="preview-section">
+            <canvas id="bike-canvas" resize></canvas>
+            <div id="size-buttons" class="size-buttons-container"></div>
         </section>
     </main>
 
+    <script>
+        window.element_ids = {
+            canvas: "bike-canvas",
+            bikeList: "pending-bikes",
+            sizeButtons: "size-buttons"
+        };
+    </script>
+
+    <script src="https://unpkg.com/paper@0.12.15/dist/paper-full.min.js"></script>
     <script type="module" src="{{ url_for('static', filename='js/moderation.js') }}"></script>
 </body>
 </html>

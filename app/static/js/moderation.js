@@ -1,40 +1,37 @@
-document.addEventListener("DOMContentLoaded", async() => {
-    const container = document.getElementById("pending-bikes");
+import { InterfacePreview } from './preview_interface.js';
 
+document.addEventListener("DOMContentLoaded", async() => {
+    const ui = new InterfacePreview(window.element_ids);
+    const bikesContainer = document.getElementById("pending-bikes");
+    const sizeButtonsContainer = document.getElementById("size-buttons");
+
+    // === Получение списка велосипедов ===
     async function fetchBikes() {
         try {
             const response = await fetch("/bikes/pending");
             if (!response.ok) {
-                container.innerHTML = `<p style="color:red;">Ошибка загрузки данных (${response.status})</p>`;
+                bikesContainer.innerHTML = `<p style="color:red;">Ошибка загрузки данных (${response.status})</p>`;
                 return;
             }
 
             const bikes = await response.json();
-            container.innerHTML = "";
+            bikesContainer.innerHTML = "";
 
             if (bikes.length === 0) {
-                container.innerHTML = "<p class='empty-message'>Нет моделей, ожидающих модерации.</p>";
+                bikesContainer.innerHTML = "<p class='empty-message'>Нет моделей, ожидающих модерации.</p>";
                 return;
             }
 
             bikes.forEach(bike => {
-                const card = document.createElement("div");
-                card.className = "bike-card";
+                const item = document.createElement("div");
+                item.className = "bike-item";
+                item.dataset.id = bike.id;
 
-                card.innerHTML = `
-                    <h3>${bike.model} (${bike.size})</h3>
-                    <p><b>ID:</b> ${bike.id}</p>
-                    <p><b>Дата добавления:</b> ${bike.created_at}</p>
-                    <div class="geometry">
-                        <span><b>Stack:</b> ${bike.stack}</span>
-                        <span><b>Reach:</b> ${bike.reach}</span>
-                        <span><b>Wheelbase:</b> ${bike.wheelbase}</span>
-                        <span><b>Head Angle:</b> ${bike.headAngle}°</span>
-                        <span><b>Seat Angle:</b> ${bike.seatAngle}°</span>
-                        <span><b>Chainstay:</b> ${bike.chainstay} мм</span>
-                        <span><b>Crank Len:</b> ${bike.crankLen} мм</span>
-                        <span><b>Stem Len:</b> ${bike.stemLen} мм</span>
-                        <span><b>Tyre W:</b> ${bike.tyreW} мм</span>
+                item.innerHTML = `
+                    <div class="bike-info">
+                        <h3>${bike.model}</h3>
+                        <p><b>ID:</b> ${bike.id}</p>
+                        <p><b>Дата добавления:</b> ${new Date(bike.created_at).toLocaleString('ru-RU')}</p>
                     </div>
                     <div class="actions">
                         <button class="approve-btn" data-id="${bike.id}">Сделать публичной</button>
@@ -42,32 +39,27 @@ document.addEventListener("DOMContentLoaded", async() => {
                     </div>
                 `;
 
-                container.appendChild(card);
-            });
+                // кнопки одобрения/отклонения
+                item.querySelectorAll("button").forEach(btn => {
+                    btn.addEventListener("click", async(e) => {
+                        e.stopPropagation();
+                        const is_public = btn.classList.contains("approve-btn");
+                        await updatePrivacy(bike.id, is_public);
+                    });
+                });
 
-            attachButtonHandlers();
+                // выбор велосипеда
+                item.addEventListener("click", () => onBikeSelect(item, bike));
+
+                bikesContainer.appendChild(item);
+            });
         } catch (err) {
             console.error(err);
-            container.innerHTML = `<p style="color:red;">Ошибка при получении данных</p>`;
+            bikesContainer.innerHTML = `<p style="color:red;">Ошибка при получении данных</p>`;
         }
     }
 
-    function attachButtonHandlers() {
-        document.querySelectorAll(".approve-btn").forEach(btn => {
-            btn.addEventListener("click", async() => {
-                const bike_id = btn.dataset.id;
-                await updatePrivacy(bike_id, true);
-            });
-        });
-
-        document.querySelectorAll(".reject-btn").forEach(btn => {
-            btn.addEventListener("click", async() => {
-                const bike_id = btn.dataset.id;
-                await updatePrivacy(bike_id, false);
-            });
-        });
-    }
-
+    // === Обновление статуса велосипеда ===
     async function updatePrivacy(bike_id, is_public) {
         try {
             const response = await fetch("/bikes/set_privacy", {
@@ -78,7 +70,7 @@ document.addEventListener("DOMContentLoaded", async() => {
             });
 
             if (response.ok) {
-                await fetchBikes(); // обновляем список после изменения
+                await fetchBikes();
             } else {
                 alert("Ошибка при обновлении статуса");
             }
@@ -88,5 +80,44 @@ document.addEventListener("DOMContentLoaded", async() => {
         }
     }
 
-    fetchBikes();
+    // === Обработка выбора велосипеда ===
+    async function onBikeSelect(item, bike) {
+        ui.cur_bike_model = bike.model
+        ui.drawer.clearCanvas();
+        document.querySelectorAll(".bike-item").forEach(b => b.classList.remove("active"));
+        item.classList.add("active");
+
+        // удаляем старые кнопки размеров
+        sizeButtonsContainer.innerHTML = "";
+
+        // получаем размеры для выбранной модели
+        try {
+            const response = await fetch("/bikes/sizes", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ bike_model: bike.model })
+            });
+            if (!response.ok) throw new Error("Ошибка при получении размеров");
+            const sizes = await response.json();
+
+            sizes.forEach(size => {
+                const btn = document.createElement("button");
+                btn.className = "size-btn";
+                btn.textContent = size;
+                btn.addEventListener("click", async() => {
+                    // снимаем активность со всех кнопок
+                    sizeButtonsContainer.querySelectorAll(".size-btn").forEach(b => b.classList.remove("active"));
+                    btn.classList.add("active");
+                    // вызываем preview для выбранного размера
+                    await ui.onSizeChoice(size);
+                });
+                sizeButtonsContainer.appendChild(btn);
+            });
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    // === Инициализация ===
+    await fetchBikes();
 });

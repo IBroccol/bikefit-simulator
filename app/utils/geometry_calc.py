@@ -11,7 +11,7 @@ def dist(p1, p2):
     return math.sqrt((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)
 
 def basic_fit(geometry, anthropometry):
-    seatHight = 0.82 * (anthropometry['hip'] + anthropometry['lowerLeg'] + anthropometry['heelToAnkle'])
+    seatHight = anthropometry['hip'] + anthropometry['lowerLeg'] + anthropometry['heelToAnkle'] - geometry['crankLen']
     stemHight = geometry['maxStemHight']
     
     seat = [-seatHight * cos(radians(geometry['seatAngle'])), seatHight * sin(radians(geometry['seatAngle']))]

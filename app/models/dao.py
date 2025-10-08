@@ -32,59 +32,108 @@ def get_user(username):
             return cur.fetchone()
 
 # --- Велосипеды ---
-def add_bike(user_id, bike: dict):
+def add_bike(user_id: int, bike: dict) -> dict:
+    """Добавляет велосипед пользователя в базу данных, создавая модель и размер при необходимости."""
+
     try:
-        with get_conn() as conn:
-            with conn.cursor() as cur:
-                bike_with_uid = {"user_id": user_id, **bike}
+        with get_conn() as conn, conn.cursor() as cur:
+            model_name = bike.get("model")
+            size = bike.get("size")
 
-                columns = [f'"{col_name}"' for col_name in bike_with_uid.keys()]
-                placeholders = ", ".join(["%s"] * len(columns))
-                col_names = ", ".join(columns)
+            if not model_name or not size:
+                return {"success": False, "error": "Model name and size are required"}
 
-                sql = f"INSERT INTO bikes ({col_names}) VALUES ({placeholders})"
+            cur.execute(
+                """
+                INSERT INTO bike_models (user_id, model)
+                VALUES (%s, %s)
+                ON CONFLICT (user_id, model) DO NOTHING
+                RETURNING id
+                """,
+                (user_id, model_name),
+            )
 
-                cur.execute(sql, tuple(bike_with_uid.values()))
-                conn.commit()
-                return {"success": True}
+            model_row = cur.fetchone()
+
+            if model_row:
+                bike_model_id = model_row[0]
+            else:
+                cur.execute(
+                    """
+                    SELECT id
+                    FROM bike_models
+                    WHERE user_id = %s AND model = %s
+                    """,
+                    (user_id, model_name),
+                )
+                bike_model_id = cur.fetchone()[0]
+
+            geometry_fields = {
+                k: v for k, v in bike.items()
+                if k != "model"
+            }
+            geometry_fields["bike_model_id"] = bike_model_id
+
+            columns = [f'"{col}"' for col in geometry_fields.keys()]
+            placeholders = ", ".join(["%s"] * len(columns))
+            col_names = ", ".join(columns)
+
+            update_clause = ", ".join(
+                f'"{col}" = EXCLUDED."{col}"'
+                for col in geometry_fields.keys()
+                if col not in ("bike_model_id", "size")
+            )
+
+            sql = f"""
+                INSERT INTO bike_sizes ({col_names})
+                VALUES ({placeholders})
+                ON CONFLICT (bike_model_id, size) DO UPDATE
+                SET {update_clause}
+            """
+
+            cur.execute(sql, tuple(geometry_fields.values()))
+            conn.commit()
+
+            return {"success": True, "bike_model_id": bike_model_id}
+
     except Exception as e:
         return {"success": False, "error": str(e)}
 
 
-def get_bike_geo(bike_id):
+def get_bike_geo(size_id):
     with get_conn() as conn:
         with conn.cursor(row_factory=dict_row) as cur:
-            cur.execute("SELECT * FROM bikes WHERE id=%s", (bike_id,))
+            cur.execute("SELECT * FROM bike_sizes WHERE id=%s", (size_id,))
             return cur.fetchone()
 
 def get_user_bikes(user_id):
     with get_conn() as conn:
         with conn.cursor(row_factory=dict_row) as cur:
-            cur.execute("SELECT DISTINCT model FROM bikes WHERE is_public OR user_id=%s ORDER BY model", (user_id,))
+            cur.execute("SELECT model FROM bike_models WHERE is_public OR user_id=%s ORDER BY model", (user_id,))
             return [row["model"] for row in cur.fetchall()]
 
 def get_pending_bikes():
     with get_conn() as conn:
         with conn.cursor(row_factory=dict_row) as cur:
-            cur.execute("SELECT * FROM bikes WHERE NOT is_public AND NOT is_moderated ORDER BY created_at")
+            cur.execute("SELECT * FROM bike_models WHERE NOT is_public AND NOT is_moderated ORDER BY created_at")
             return cur.fetchall()
 
 def set_privacy(bike_id, is_public):
     with get_conn() as conn:
         with conn.cursor(row_factory=dict_row) as cur:
-            cur.execute("UPDATE bikes SET is_public = %s, is_moderated = TRUE WHERE id = %s", (is_public, bike_id))
+            cur.execute("UPDATE bike_models SET is_public = %s, is_moderated = TRUE WHERE id = %s", (is_public, bike_id))
             return {"success": True}   
 
 def get_bike_sizes(bike_model):
     with get_conn() as conn:
         with conn.cursor(row_factory=dict_row) as cur:
-            cur.execute("SELECT size FROM bikes WHERE model=%s ORDER BY id", (bike_model,))
+            cur.execute('SELECT size FROM bike_sizes bs JOIN bike_models bm ON bs.bike_model_id = bm.id WHERE bm.model=%s ORDER BY bs."seatTube"', (bike_model,))
             return [row["size"] for row in cur.fetchall()]
 
 def get_bike_id(bike_model, size):
     with get_conn() as conn:
         with conn.cursor(row_factory=dict_row) as cur:
-            cur.execute("SELECT id FROM bikes WHERE model=%s AND size=%s", (bike_model, size))
+            cur.execute("SELECT bs.id FROM bike_sizes bs JOIN bike_models bm ON bs.bike_model_id = bm.id WHERE bm.model=%s AND bs.size=%s", (bike_model, size))
             row = cur.fetchone()
             return row["id"] if row else None
 

@@ -65,6 +65,21 @@ export class Drawer {
         this.unblur();
     }
 
+    draw_preview() {
+        this.scope.setup(this.canvas);
+        this.clearCanvas();
+        this.calculateScale();
+        this.scaleData();
+        this.FIT = {
+            'seatHight': this.GEOMETRY['seatTube'] + (this.GEOMETRY['minseatpostLen'] + this.GEOMETRY['maxseatpostLen']) / 2,
+            'stemHight': this.GEOMETRY['maxStemHight'],
+            'shifterAngle': 45,
+            'saddleOffset': 0,
+        }
+        this.drawBikeGeometry();
+        this.unblur();
+    }
+
     calculateScale() {
         const rect = this.canvas.getBoundingClientRect();
         this.width = rect.width;
@@ -105,11 +120,11 @@ export class Drawer {
     }
 
     drawAngles() {
-        this.angles.ElbowAngle = new Angle({ scope: this.scope, p1: this.rider.Shoulder, p2: this.rider.Elbow, p3: this.rider.Hands, draw_segments: false, valid_range: [150, 160] })
+        this.angles.ElbowAngle = new Angle({ scope: this.scope, p1: this.rider.Shoulder, p2: this.rider.Elbow, p3: this.rider.Hands, draw_segments: false, valid_range: [145, 165] })
         let line0 = h_line(this.scope, this.rider.HipJoint, false)
         let point0 = new Point({ scope: this.scope, x: this.rider.Shoulder.x, y: this.rider.Shoulder.y, dependencies: [line0], visible: false })
-        this.angles.TorsoAngle = new Angle({ scope: this.scope, p1: this.rider.Shoulder, p2: this.rider.HipJoint, p3: point0, valid_range: [38, 44], draw_segments: false })
-        this.angles.ShoulderAngle = new Angle({ scope: this.scope, p1: this.rider.Hands, p2: this.rider.Shoulder, p3: this.rider.HipJoint, draw_segments: true, valid_range: [88, 92] })
+        this.angles.TorsoAngle = new Angle({ scope: this.scope, p1: this.rider.Shoulder, p2: this.rider.HipJoint, p3: point0, valid_range: [35, 47.5], draw_segments: false })
+        this.angles.ShoulderAngle = new Angle({ scope: this.scope, p1: this.rider.Hands, p2: this.rider.Shoulder, p3: this.rider.HipJoint, draw_segments: true, valid_range: [87.5, 92.5] })
 
 
         point0 = new Point({ scope: this.scope, x: this.bike.ShifterAxle.x + this.GEOMETRY['shifterReach'], y: this.bike.ShifterAxle.y, dependencies: [this.bike.ShifterAxle], visible: false })
@@ -117,9 +132,10 @@ export class Drawer {
     }
 
     clearCanvas() {
-        console.log(this.scope)
+        this.scope.setup(this.canvas);
         this.project.activeLayer.removeChildren();
-        // this.scope.view.update()
+        this.scope.view.update();
+
         Figure.allFigures = [];
 
         // Сброс счетчиков

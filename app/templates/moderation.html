@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Модерация велосипедов</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/moderation.css') }}">
     <style>
         /* --- Общие стили --- */
         body {
@@ -23,7 +25,6 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             flex-shrink: 0; /* header не сжимается */
         }
-
 
         header h1 {
             margin: 0;
@@ -198,7 +199,7 @@
     <!-- Верхняя панель с кнопкой "В меню" -->
     <header>
         <h1>Модерация велосипедов</h1>
-        <button onclick="window.location.href='/dashboard'">В меню</button>
+        <button class="btn btn-primary" onclick="window.location.href='/dashboard'">В меню</button>
     </header>
 
     <!-- Основной контейнер -->

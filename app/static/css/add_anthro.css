@@ -1,0 +1,100 @@
+/* === Антропометрическая форма === */
+
+.anthro-container {
+    max-width: 600px;
+    margin: 20px auto;
+}
+
+.anthro-form {
+    display: grid;
+    gap: 20px;
+}
+
+.form-section {
+    margin-bottom: 10px;
+}
+
+.form-section h3 {
+    margin-bottom: 15px;
+    color: var(--primary-color);
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 5px;
+}
+
+.field-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.field-row:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.field-label {
+    flex: 1;
+    font-weight: 500;
+    color: var(--text-primary);
+    min-width: 180px;
+}
+
+.field-input {
+    flex: 0 0 150px;
+}
+
+.field-input input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius);
+    font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background: var(--surface);
+}
+
+.field-input input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(30, 107, 255, 0.2);
+}
+
+.form-actions {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+.form-actions .btn {
+    min-width: 200px;
+}
+
+
+/* Адаптивность для антропометрической формы */
+
+@media (max-width: 600px) {
+    .anthro-container {
+        margin: 10px;
+        max-width: none;
+    }
+    .field-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    .field-label {
+        min-width: auto;
+        text-align: center;
+    }
+    .field-input {
+        flex: 1;
+    }
+}

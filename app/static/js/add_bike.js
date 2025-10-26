@@ -14,7 +14,8 @@ function removeColumn(btn) {
 
     // Удаляем td в каждой строке, кроме общих
     for (let row of table.tBodies[0].rows) {
-        if (row.classList.contains("shared-param")) continue;
+        if (row.cells[0].classList.contains("shared-param")) continue;
+        if (row.cells[0].classList.contains("section-title")) continue;
         if (row.cells[colIndex]) row.deleteCell(colIndex);
     }
 
@@ -31,11 +32,11 @@ function addColumn() {
     newTh.innerHTML = `
         <div class="header-cell">
             <input type="text" name="size" placeholder="Размер">
-            <button type="button" class="remove-col-btn" title="Удалить столбец">×</button>
+            <button type="button" class="btn btn-danger" title="Удалить столбец">×</button>
         </div>`;
     headerRow.appendChild(newTh);
 
-    const removeBtn = newTh.querySelector(".remove-col-btn");
+    const removeBtn = newTh.querySelector(".btn-danger");
     removeBtn.addEventListener("click", () => removeColumn(removeBtn));
 
     // Добавляем ячейки параметров
@@ -43,18 +44,29 @@ function addColumn() {
     for (let row of table.tBodies[0].rows) {
         const firstCell = row.cells[0];
         if (!firstCell) continue;
-        const cellClass = firstCell.className;
-        if (cellClass.includes("shared-param") || cellClass.includes("section-title")) continue;
 
-        const param = firstCell.innerText.trim();
+        // Пропускаем общие параметры и заголовки
+        if (firstCell.classList.contains("shared-param") ||
+            firstCell.classList.contains("section-title")) continue;
+
+        // Извлекаем имя параметра из текста ячейки
+        const param = extractParamName(firstCell);
+        if (!param) continue;
+
         const newTd = document.createElement("td");
         newTd.innerHTML = `<input type="number" step="0.1" name="${param}_${newIndex - 1}">`;
         row.appendChild(newTd);
     }
 
-
     updateSharedColspan();
     updateRemoveButtons();
+}
+
+// Извлечение имени параметра из ячейки (удаляем tooltip и пробелы)
+function extractParamName(cell) {
+    const textContent = cell.textContent.trim();
+    // Удаляем "?" из tooltip и пробелы
+    return textContent.replace('?', '').trim();
 }
 
 // Обновление colspan для общих параметров
@@ -62,7 +74,7 @@ function updateSharedColspan() {
     const table = document.getElementById("geometryTable");
     const totalCols = table.tHead.rows[0].cells.length;
     for (let row of table.tBodies[0].rows) {
-        if (row.classList.contains("shared-param")) {
+        if (row.cells[0].classList.contains("shared-param")) {
             const inputCell = row.cells[1];
             inputCell.colSpan = totalCols - 1;
         }
@@ -71,7 +83,7 @@ function updateSharedColspan() {
 
 // Отображение / скрытие кнопок удаления
 function updateRemoveButtons() {
-    const removeButtons = document.querySelectorAll(".remove-col-btn");
+    const removeButtons = document.querySelectorAll(".btn-danger[title='Удалить столбец']");
     const show = removeButtons.length > 1;
     removeButtons.forEach(btn => btn.style.display = show ? "inline-block" : "none");
 }
@@ -94,51 +106,43 @@ async function sendBikes() {
 
     const sharedValues = {};
     for (let row of table.tBodies[0].rows) {
-        const param = row.cells[0].innerText.trim();
-        if (SHARED_PARAMS.includes(param)) {
+        if (row.cells[0].classList.contains("shared-param")) {
             const input = row.querySelector("input");
-            if (input && input.value !== "")
+            if (input && input.value !== "") {
+                const param = input.name;
                 sharedValues[param] = parseFloat(input.value);
+            }
         }
     }
 
-    const bikes = sizes.map((size, col) => {
+    const bikes = sizes.map((size, colIndex) => {
         const bike = { model, size };
+
+        // Добавляем общие параметры
+        Object.assign(bike, sharedValues);
+
+        // Добавляем индивидуальные параметры для каждого размера
         for (let row of table.tBodies[0].rows) {
-            let param = "";
             const firstCell = row.cells[0];
             if (!firstCell) continue;
 
-            // Игнорируем строки-заголовки и shared, если нужно
-            if (firstCell.classList.contains("section-title")) continue;
+            // Пропускаем общие параметры и заголовки
+            if (firstCell.classList.contains("shared-param") ||
+                firstCell.classList.contains("section-title")) continue;
 
-            // Берём текстовый узел после tooltip
-            for (let node of firstCell.childNodes) {
-                if (node.nodeType === Node.TEXT_NODE) {
-                    const txt = node.textContent.trim();
-                    if (txt) {
-                        param = txt;
-                        break;
-                    }
-                }
-            }
-            console.log(row, param)
-            if (!param) continue; // если не нашли текст, пропускаем
+            const param = extractParamName(firstCell);
+            if (!param) continue;
 
-
-            console.log(sharedValues)
-            if (SHARED_PARAMS.includes(param)) {
-                const sharedInput = row.querySelector("input");
-                bike[param] = sharedInput && sharedInput.value !== "" ? parseFloat(sharedInput.value) : null;
-            } else {
-                let input = null;
-                if (row.cells[col + 1]) {
-                    input = row.cells[col + 1].querySelector("input");
-                }
-                bike[param] = input && input.value !== "" ? parseFloat(input.value) : null;
+            let input = null;
+            if (row.cells[colIndex + 1]) {
+                input = row.cells[colIndex + 1].querySelector("input");
             }
 
+            if (input && input.value !== "") {
+                bike[param] = parseFloat(input.value);
+            }
         }
+
         return bike;
     });
 
@@ -149,19 +153,40 @@ async function sendBikes() {
             body: JSON.stringify(bikes)
         });
         const result = await res.json();
-        alert(result.success ? "✅ Успешно сохранено!" : "❌ Ошибка при сохранении");
+        if (result.success) {
+            alert("✅ Успешно сохранено!");
+            // Опционально: очистить форму или перенаправить
+            window.location.href = '/dashboard';
+        } else {
+            alert("❌ Ошибка при сохранении: " + (result.error || "Неизвестная ошибка"));
+        }
     } catch (err) {
         console.error(err);
-        alert("Ошибка сети");
+        alert("Ошибка сети при сохранении данных");
     }
 }
 
 // Привязка событий
-document.querySelector(".add-col-btn").addEventListener("click", addColumn);
-document.querySelector(".submit-btn").addEventListener("click", sendBikes);
-document.querySelectorAll(".remove-col-btn").forEach(btn =>
-    btn.addEventListener("click", () => removeColumn(btn))
-);
+document.addEventListener('DOMContentLoaded', function() {
+    // Используем правильные селекторы для обновлённых классов
+    const addSizeBtn = document.getElementById('addSizeBtn');
+    const submitBtn = document.getElementById('submitBtn');
 
-updateSharedColspan();
-updateRemoveButtons();
+    if (addSizeBtn) {
+        addSizeBtn.addEventListener("click", addColumn);
+    }
+
+    if (submitBtn) {
+        submitBtn.addEventListener("click", sendBikes);
+    }
+
+    // Привязываем существующие кнопки удаления
+    document.querySelectorAll(".btn-danger[title='Удалить столбец']").forEach(btn =>
+        btn.addEventListener("click", () => removeColumn(btn))
+    );
+
+    // Инициализация
+    updateSharedColspan();
+    updateRemoveButtons();
+});
+` and `

@@ -4,148 +4,12 @@
     <meta charset="UTF-8">
     <title>Сравнение велосипедов</title>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.15/paper-full.min.js"></script>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: sans-serif;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            background: #f4f6f8;
-        }
-
-        .top-bar {
-            width: 100%;
-            display: flex;
-            justify-content: flex-start;
-            padding: 15px 20px;
-            background: #fff;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .menu-btn {
-            padding: 10px 15px;
-            background: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .menu-btn:hover {
-            background: #0056b3;
-        }
-
-        .compare-section {
-            flex: 1;
-            display: flex;
-            gap: 20px;
-            padding: 20px;
-            box-sizing: border-box;
-            width: 100%;
-            max-width: 100vw;
-        }
-
-        .bike-panel {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            padding: 20px;
-            min-width: 0;
-            flex: 1;
-        }
-
-        .bike-canvas {
-            width: 100%;
-            height: 400px; /* фиксированная высота */
-            border: 1px solid #ddd;
-            background: #fff;
-            border-radius: 10px;
-            flex: none; /* не растягивать */
-        }
-
-        .controls {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .input-row {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        input, select, button {
-            padding: 8px;
-            font-size: 14px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
-        }
-
-        button {
-            padding: 10px;
-            background: #007BFF;
-            color: white;
-            border: none;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        button:hover {
-            background: #0056b3;
-        }
-
-        .reset-btn {
-            align-self: flex-end;
-        }
-
-        h3 {
-            margin-top: 0;
-            margin-bottom: 10px;
-            font-size: 18px;
-        }
-
-        .autocomplete-list {
-            border: 1px solid #ccc;
-            display: none;
-            max-height: 150px;
-            overflow-y: auto;
-        }
-
-        .autocomplete-item {
-            padding: 5px;
-            cursor: pointer;
-        }
-
-        .autocomplete-item:hover {
-            background-color: #eee;
-        }
-
-        /* адаптив */
-        @media (max-width: 900px) {
-            .compare-section {
-                flex-direction: column;
-            }
-        }
-
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/compare.css') }}">
 </head>
 <body>
     <div class="top-bar">
-        <button class="menu-btn" onclick="window.location.href='/dashboard'">В меню</button>
+        <button class="btn btn-primary" onclick="window.location.href='/dashboard'">В меню</button>
     </div>
 
     <div class="compare-section">
@@ -173,11 +37,11 @@
 
                     <div class="input-row">
                         <input type="text" id="fitInputLeft" placeholder="Fitting name">
-                        <button id="saveBtnLeft">Save</button>
+                        <button class="btn btn-success" id="saveBtnLeft">Save</button>
                     </div>
                 </div>
 
-                <button class="reset-btn" id="resetBtnLeft">Reset</button>
+                <button class="btn btn-primary" id="resetBtnLeft">Reset</button>
             </div>
         </div>
 
@@ -205,11 +69,11 @@
 
                     <div class="input-row">
                         <input type="text" id="fitInputRight" placeholder="Fitting name">
-                        <button id="saveBtnRight">Save</button>
+                        <button class="btn btn-success" id="saveBtnRight">Save</button>
                     </div>
                 </div>
 
-                <button class="reset-btn" id="resetBtnRight">Reset</button>
+                <button class="btn btn-primary" id="resetBtnRight">Reset</button>
             </div>
         </div>
     </div>

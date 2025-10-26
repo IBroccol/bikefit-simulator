@@ -3,80 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Личный кабинет</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f6f8;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-
-        .card {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
-            max-width: 400px;
-            width: 100%;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        a.button {
-            display: block;       /* каждая кнопка на отдельной строке */
-            width: 100%;          /* растягиваем по ширине карточки */
-            padding: 10px 15px;
-            background-color: #007BFF;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            text-align: center;
-            transition: background-color 0.3s;
-            box-sizing: border-box;
-        }
-
-        a.button:hover {
-            background-color: #0056b3;
-        }
-
-        a.logout {
-            display: block;
-            margin-top: 20px;
-            color: #dc3545;
-            text-decoration: none;
-            transition: text-decoration 0.3s;
-        }
-
-        a.logout:hover {
-            text-decoration: underline;
-        }
-
-        .buttons {
-            display: block; /* простой блоковый контейнер */
-            margin-top: 10px;
-        }
-
-        .buttons a + a { /* добавляем отступ сверху между кнопками */
-            margin-top: 10px;
-        }
-
-        .flash {
-            padding: 10px 12px;
-            margin-bottom: 15px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-        }
-
-        .flash.success { background: #d4edda; color: #155724; border: none; }
-        .flash.danger  { background: #f8d7da; color: #721c24; border: none; }
-        .flash.info    { background: #d1ecf1; color: #0c5460; border: none; }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
     <div class="card">
@@ -89,18 +16,18 @@
         {% endwith %}
 
         <div class="buttons">
-            <a class="button" href="/add_bike">Добавить велосипед</a>
-            <a class="button" href="/view">Мои велосипеды</a>
-            <a class="button" href="/add_anthro">Ввести антропометрию</a>
-            <a class="button" href="/canvas">Построить посадку</a>
-            <a class="button" href="/compare">Сравнить посадки</a>
+            <a class="btn btn-primary btn-block" href="/add_bike">Добавить велосипед</a>
+            <a class="btn btn-primary btn-block mt-10" href="/view">Мои велосипеды</a>
+            <a class="btn btn-primary btn-block mt-10" href="/add_anthro">Ввести антропометрию</a>
+            <a class="btn btn-primary btn-block mt-10" href="/canvas">Построить посадку</a>
+            <a class="btn btn-primary btn-block mt-10" href="/compare">Сравнить посадки</a>
 
             {% if session.get('user_role') == 'moderator' %}
-                <a class="button moderator-btn" href="/moderation">Модерация</a>
+                <a class="btn btn-info btn-block mt-10" href="/moderation">Модерация</a>
             {% endif %}
         </div>
 
-        <a class="logout" href="/logout">Выйти</a>
+        <a class="btn btn-danger text-center" href="/logout">Выйти</a>
     </div>
 </body>
 </html>

@@ -2,152 +2,113 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Canvas Paper.js</title>
+    <title>Построитель посадки</title>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.15/paper-full.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <style>
-        body {
+        /* Дополнительные стили специально для canvas страницы */
+        html, body {
+            height: 100%;
             margin: 0;
             padding: 0;
-            font-family: sans-serif;
-            display: flex;
-            height: 100vh;
-            background: #f4f6f8;
         }
-
-        .sidebar {
-            width: 300px;
-            padding: 20px;
-            box-sizing: border-box;
-            border-right: 1px solid #ccc;
+        
+        .canvas-page {
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            gap: 30px;
-            background: #fff;
         }
-
-        .main {
+        
+        .canvas-layout {
+            flex: 1;
+            display: flex;
+            gap: 20px;
+        }
+        
+        .canvas-container {
             flex: 1;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
             padding: 20px;
+            background: var(--background);
         }
-
-        canvas {
-            width: 100%;
-            height: 80%;
-            border: 1px solid #ddd;
-            background: #fff;
-            border-radius: 10px;
-        }
-
-        h3 {
-            margin-top: 0;
-            margin-bottom: 10px;
-            font-size: 18px;
-        }
-
-        .block {
+        
+        .canvas-wrapper {
+            flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 15px;
         }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        input, select, button {
-            padding: 8px;
-            font-size: 14px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
-        }
-
-        button {
-            padding: 10px;
-            background: #007BFF;
-            color: white;
-            border: none;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        button:hover {
-            background: #0056b3;
-        }
-
-        .top-bar {
+        
+        #myCanvas {
+            flex: 1;
             width: 100%;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            background: var(--surface);
+            box-shadow: var(--shadow-sm);
+            min-height: 400px;
+        }
+        
+        .canvas-controls {
             display: flex;
-            justify-content: flex-start;
-            margin-bottom: 15px;
-        }
-
-        .reset-btn {
-            margin-top: 15px;
-            align-self: flex-end;
-        }
-
-        .autocomplete-item {
-            padding: 5px;
-            cursor: pointer;
-        }
-
-        .autocomplete-item:hover {
-            background-color: #eee;
+            justify-content: center;
+            padding: 10px 0;
         }
     </style>
 </head>
 <body>
-    <!-- Левая панель -->
-    <div class="sidebar">
-        <div class="block">
-            <h3>Bicycle</h3>
-            <div class="input-group">
-                <input type="text" placeholder="Search" id="bikeSearch" readonly>
-                <div id="bikeList" class="autocomplete-list" style="border:1px solid #ccc; display:none; max-height:150px; overflow-y:auto;"></div>
-                <select id="sizeSelect">
-                    <option>Select size</option>
-                </select>
-            </div>
-        </div>
-    </div>
-
-    <!-- Центральная часть с канвасом -->
-    <div class="main">
+    <div class="canvas-page">
         <div class="top-bar">
-            <button class="menu-btn" onclick="window.location.href='/dashboard'">В меню</button>
-        </div>
-        <canvas id="myCanvas" resize></canvas>
-        <button class="reset-btn" id="resetBtn">Reset</button>
-    </div>
-
-    <!-- Правая панель -->
-    <div class="sidebar">
-        <div class="block">
-            <h3>Saved Fittings</h3>
-            <div class="input-group">
-                <input type="text" placeholder="Search" id="fitSearch" readonly>
-                <div id="fitList" class="autocomplete-list" style="border:1px solid #ccc; display:none; max-height:150px; overflow-y:auto;"></div>
-            </div>
+            <button class="btn btn-primary" onclick="window.location.href='/dashboard'">В меню</button>
         </div>
 
-        <div class="block">
-            <h3>Save Current Fitting</h3>
-            <div class="input-group">
-                <input type="text" id="fitInput" placeholder="Fitting name">
-                <button id="saveBtn">Save</button>
-            </div>
+        <div class="canvas-layout">
+            <!-- Левая панель -->
+            <aside class="sidebar">
+                <div class="block">
+                    <h3>Bicycle</h3>
+                    <div class="input-group">
+                        <input type="text" placeholder="Search" id="bikeSearch" readonly>
+                        <div id="bikeList" class="autocomplete-list"></div>
+                        <select id="sizeSelect">
+                            <option>Select size</option>
+                        </select>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Центральная часть с канвасом -->
+            <main class="canvas-container">
+                <div class="canvas-wrapper">
+                    <canvas id="myCanvas"></canvas>
+                    <div class="canvas-controls">
+                        <button class="btn btn-primary" id="resetBtn">Reset</button>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Правая панель -->
+            <aside class="sidebar">
+                <div class="block">
+                    <h3>Saved Fittings</h3>
+                    <div class="input-group">
+                        <input type="text" placeholder="Search" id="fitSearch" readonly>
+                        <div id="fitList" class="autocomplete-list"></div>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <h3>Save Current Fitting</h3>
+                    <div class="input-group">
+                        <input type="text" id="fitInput" placeholder="Fitting name">
+                        <button class="btn btn-success" id="saveBtn">Save</button>
+                    </div>
+                </div>
+            </aside>
         </div>
     </div>
     
-    <!-- Подключаем внешний JS -->
     <script>
         window.element_ids = {
             "canvas": "myCanvas",
@@ -162,6 +123,5 @@
         }
     </script>
     <script type="module" src="{{ url_for('static', filename='js/canvas.js') }}"></script>
-
 </body>
 </html>

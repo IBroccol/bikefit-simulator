@@ -1,0 +1,90 @@
+/* --- Основной контейнер --- */
+
+#moderation-container {
+    display: flex;
+    gap: 30px;
+    background: var(--surface);
+    padding: 20px;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    flex: 1;
+    /* занимает оставшееся место под header */
+    width: 90%;
+    height: 90%;
+    margin: 20px auto;
+}
+
+
+/* --- Левая колонка: список велосипедов --- */
+
+#pending-bikes {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    overflow-y: auto;
+    padding-right: 10px;
+    border-right: 1px solid var(--border);
+}
+
+.empty-message {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 16px;
+    margin-top: 40px;
+}
+
+.bike-item .approve-btn,
+.bike-item .reject-btn {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    margin-top: 8px;
+}
+
+.bike-item .approve-btn {
+    background-color: var(--success-color);
+    color: var(--surface);
+}
+
+.bike-item .approve-btn:hover {
+    background-color: var(--success-hover);
+    transform: scale(0.98);
+}
+
+.bike-item .reject-btn {
+    background-color: var(--danger-color);
+    color: var(--surface);
+}
+
+.bike-item .reject-btn:hover {
+    background-color: var(--danger-hover);
+    transform: scale(0.98);
+}
+
+
+/* --- Правая колонка: canvas + кнопки размеров --- */
+
+#preview-section {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 15px;
+    height: 100%;
+}
+
+#bike-canvas {
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-xl);
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+    width: 100%;
+    flex-grow: 1;
+    display: block;
+}

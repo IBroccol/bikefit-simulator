@@ -100,7 +100,7 @@ export class InterfacePreview {
 
     async getBikeGeo(bike_id) {
         try {
-            const response = await fetch("/bikes/geo", {
+            const response = await fetch("/bikes/geometry", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ bike_id })
@@ -108,7 +108,7 @@ export class InterfacePreview {
             if (response.ok) return await response.json();
             throw new Error("Ошибка при получении геометрии");
         } catch (error) {
-            console.error("Ошибка при запросе /bikes/geo:", error);
+            console.error("Ошибка при запросе /bikes/geometry:", error);
             throw error;
         }
     }

@@ -1,133 +1,148 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Добавить велосипед</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f8;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      min-height: 100vh;
-    }
-
-    .container {
-      width: 100%;
-      max-width: 1200px;
-      background: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    h2, h3 {
-      margin: 0 0 10px 0;
-    }
-
-    input[type="text"], input[type="number"] {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 8px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      font-size: 14px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-    }
-
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: center;
-      vertical-align: middle;
-    }
-
-    th {
-      background: #f1f1f1;
-    }
-
-    .header-cell {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .header-cell input {
-      flex: 1;
-    }
-
-    .add-col-btn, .menu-btn, .submit-btn {
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 14px;
-      transition: background 0.3s;
-    }
-
-    .add-col-btn, .menu-btn {
-      background: #007bff;
-      color: white;
-      padding: 8px 12px;
-      margin-top: 10px;
-    }
-
-    .add-col-btn:hover, .menu-btn:hover {
-      background: #0056b3;
-    }
-
-    .remove-col-btn {
-      background: #dc3545;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      padding: 3px 7px;
-      cursor: pointer;
-    }
-
-    .remove-col-btn:hover {
-      background: #a71d2a;
-    }
-
-    .submit-btn {
-      padding: 12px;
-      background: #28a745;
-      color: white;
-      margin-top: 20px;
-    }
-
-    .submit-btn:hover {
-      background: #218838;
-    }
-
-    .top-bar {
-      display: flex;
-      justify-content: flex-start;
-      margin-bottom: 20px;
-    }
-
-    .section-title {
-      background: #f9fafb;
-      font-weight: bold;
-      text-align: left;
-      padding-left: 10px;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Добавить велосипед</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f6f8;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+}
+.container {
+    width: 100%;
+    max-width: 1200px;
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+h2, h3 {
+    margin: 0 0 10px 0;
+}
+input[type="text"], input[type="number"] {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+    vertical-align: middle;
+}
+th {
+    background: #f1f1f1;
+}
+.header-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.header-cell input {
+    flex: 1;
+}
+.add-col-btn, .menu-btn, .submit-btn {
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s;
+}
+.add-col-btn, .menu-btn {
+    background: #007bff;
+    color: white;
+    padding: 8px 12px;
+    margin-top: 10px;
+}
+.add-col-btn:hover, .menu-btn:hover {
+    background: #0056b3;
+}
+.remove-col-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 3px 7px;
+    cursor: pointer;
+}
+.remove-col-btn:hover {
+    background: #a71d2a;
+}
+.submit-btn {
+    padding: 12px;
+    background: #28a745;
+    color: white;
+    margin-top: 20px;
+}
+.submit-btn:hover {
+    background: #218838;
+}
+.top-bar {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 20px;
+}
+.section-title {
+    background: #f9fafb;
+    font-weight: bold;
+    text-align: left;
+    padding-left: 10px;
+}
+.tooltip {
+    position: relative;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+    background: #007BFF;
+    color: white;
+    border-radius: 50%;
+    font-weight: bold;
+    margin-right: 6px;
+    flex-shrink: 0;
+}
+.tooltip img {
+    display: none;
+    position: absolute;
+    top: -10px;
+    left: 25px;
+    width: 200px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background: white;
+    padding: 5px;
+    z-index: 10;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+.tooltip:hover img {
+    display: block;
+}
+</style>
 </head>
+
 <body>
-  <div class="container">
+<div class="container">
     <div class="top-bar">
-      <button class="menu-btn" onclick="window.location.href='/dashboard'">В меню</button>
+        <button class="menu-btn" onclick="window.location.href='/dashboard'">В меню</button>
     </div>
 
     <h2>🚲 Добавить велосипед</h2>
@@ -136,57 +151,57 @@
 
     <h3>📐 Параметры по размерам</h3>
     <button type="button" class="add-col-btn">+ Добавить размер</button>
+
     <table id="geometryTable">
-      <thead>
-        <tr>
-          <th>Параметр</th>
-          <th>
-            <div class="header-cell">
-              <input type="text" name="size" placeholder="Размер">
-              <button type="button" class="remove-col-btn" title="Удалить столбец">×</button>
-            </div>
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td class="section-title" colspan="100%">📐 Геометрия рамы</td></tr>
-        <tr><td>seatTube</td><td><input type="number" step="0.1" name="seatTube"></td></tr>
-        <tr><td>seatAngle</td><td><input type="number" step="0.1" name="seatAngle"></td></tr>
-        <tr><td>headTube</td><td><input type="number" step="0.1" name="headTube"></td></tr>
-        <tr><td>headAngle</td><td><input type="number" step="0.1" name="headAngle"></td></tr>
-        <tr><td>bbdrop</td><td><input type="number" step="0.1" name="bbdrop"></td></tr>
-        <tr><td>chainstay</td><td><input type="number" step="0.1" name="chainstay"></td></tr>
-        <tr><td>wheelbase</td><td><input type="number" step="0.1" name="wheelbase"></td></tr>
-        <tr><td>stack</td><td><input type="number" step="0.1" name="stack"></td></tr>
-        <tr><td>reach</td><td><input type="number" step="0.1" name="reach"></td></tr>
+        <thead>
+            <tr>
+                <th>Параметр</th>
+                <th>
+                    <div class="header-cell">
+                        <input type="text" name="size" placeholder="Размер">
+                        <button type="button" class="remove-col-btn" title="Удалить столбец">×</button>
+                    </div>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td class="section-title" colspan="100%">📐 Геометрия рамы</td></tr>
+            <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/seatTube.png" alt="Seat tube"></div>seatTube</td><td><input type="number" step="0.1" name="seatTube"></td></tr>
+            <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/seatAngle.png" alt="Seat angle"></div>seatAngle</td><td><input type="number" step="0.1" name="seatAngle"></td></tr>
+            <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/headTube.png" alt="Head tube"></div>headTube</td><td><input type="number" step="0.1" name="headTube"></td></tr>
+            <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/headAngle.png" alt="Head angle"></div>headAngle</td><td><input type="number" step="0.1" name="headAngle"></td></tr>
+            <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/bbdrop.png" alt="BB drop"></div>bbdrop</td><td><input type="number" step="0.1" name="bbdrop"></td></tr>
+            <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/chainstay.png" alt="Chainstay"></div>chainstay</td><td><input type="number" step="0.1" name="chainstay"></td></tr>
+            <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/wheelbase.png" alt="Wheelbase"></div>wheelbase</td><td><input type="number" step="0.1" name="wheelbase"></td></tr>
+            <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/stack.png" alt="Stack"></div>stack</td><td><input type="number" step="0.1" name="stack"></td></tr>
+            <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/reach.png" alt="Reach"></div>reach</td><td><input type="number" step="0.1" name="reach"></td></tr>
 
-        <tr><td class="section-title" colspan="100%">🛞 Колёса и трансмиссия</td></tr>
-        <tr><td>rimD</td><td><input type="number" step="0.1" name="rimD"></td></tr>
-        <tr><td>tyreW</td><td><input type="number" step="0.1" name="tyreW"></td></tr>
-        <tr><td>crankLen</td><td><input type="number" step="0.1" name="crankLen"></td></tr>
+            <tr><td class="section-title" colspan="100%">🛞 Колёса и трансмиссия</td></tr>
+            <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/rimD.png" alt="Диаметр обода"></div>rimD</td><td colspan="100%" class="shared-input"><input type="number" step="0.1" name="rimD"></td></tr>
+            <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/tyreW.png" alt="Ширина покрышки"></div>tyreW</td><td colspan="100%" class="shared-input"><input type="number" step="0.1" name="tyreW"></td></tr>
+            <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/crankLen.png" alt="Crank length"></div>crankLen</td><td><input type="number" step="0.1" name="crankLen"></td></tr>
 
-        <tr><td class="section-title" colspan="100%">🚲 Посадка и органы управления</td></tr>
-        <tr><td>stemLen</td><td><input type="number" step="0.1" name="stemLen"></td></tr>
-        <tr><td>stemAngle</td><td><input type="number" step="0.1" name="stemAngle"></td></tr>
-        <tr><td>minStemHight</td><td><input type="number" step="0.1" name="minStemHight"></td></tr>
-        <tr><td>maxStemHight</td><td><input type="number" step="0.1" name="maxStemHight"></td></tr>
-        <tr><td>barReach</td><td><input type="number" step="0.1" name="barReach"></td></tr>
-        <tr><td>barDrop</td><td><input type="number" step="0.1" name="barDrop"></td></tr>
-        <tr><td>shifterReach</td><td><input type="number" step="0.1" name="shifterReach"></td></tr>
+            <tr><td class="section-title" colspan="100%">🚲 Посадка и органы управления</td></tr>
+            <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/stemLen.png" alt="Stem length"></div>stemLen</td><td><input type="number" step="0.1" name="stemLen"></td></tr>
+            <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/stemAngle.png" alt="Stem angle"></div>stemAngle</td><td colspan="100%" class="shared-input"><input type="number" step="0.1" name="stemAngle"></td></tr>
+            <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/minStemHight.png" alt="Min stem height"></div>minStemHight</td><td colspan="100%" class="shared-input"><input type="number" step="0.1" name="minStemHight"></td></tr>
+            <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/maxStemHight.png" alt="Max stem height"></div>maxStemHight</td><td colspan="100%" class="shared-input"><input type="number" step="0.1" name="maxStemHight"></td></tr>
+            <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/barReach.png" alt="Bar reach"></div>barReach</td><td colspan="100%" class="shared-input"><input type="number" step="0.1" name="barReach"></td></tr>
+            <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/barDrop.png" alt="Bar drop"></div>barDrop</td><td colspan="100%" class="shared-input"><input type="number" step="0.1" name="barDrop"></td></tr>
+            <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/shifterReach.png" alt="Shifter reach"></div>shifterReach</td><td colspan="100%" class="shared-input"><input type="number" step="0.1" name="shifterReach"></td></tr>
 
-        <tr><td class="section-title" colspan="100%">💺 Седло</td></tr>
-        <tr><td>saddleLen</td><td><input type="number" step="0.1" name="saddleLen"></td></tr>
-        <tr><td>saddleRailLen</td><td><input type="number" step="0.1" name="saddleRailLen"></td></tr>
-        <tr><td>saddleHeight</td><td><input type="number" step="0.1" name="saddleHeight"></td></tr>
-        <tr><td>minseatpostLen</td><td><input type="number" step="0.1" name="minseatpostLen"></td></tr>
-        <tr><td>maxseatpostLen</td><td><input type="number" step="0.1" name="maxseatpostLen"></td></tr>
-      </tbody>
+            <tr><td class="section-title" colspan="100%">💺 Седло</td></tr>
+            <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/saddleLen.png" alt="Saddle length"></div>saddleLen</td><td colspan="100%" class="shared-input"><input type="number" step="0.1" name="saddleLen"></td></tr>
+            <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/saddleRailLen.png" alt="Saddle rail length"></div>saddleRailLen</td><td colspan="100%" class="shared-input"><input type="number" step="0.1" name="saddleRailLen"></td></tr>
+            <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/saddleHeight.png" alt="Saddle height"></div>saddleHeight</td><td colspan="100%" class="shared-input"><input type="number" step="0.1" name="saddleHeight"></td></tr>
+            <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/minseatpostLen.png" alt="Min seatpost length"></div>minseatpostLen</td><td colspan="100%" class="shared-input"><input type="number" step="0.1" name="minseatpostLen"></td></tr>
+            <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/maxseatpostLen.png" alt="Max seatpost length"></div>maxseatpostLen</td><td colspan="100%" class="shared-input"><input type="number" step="0.1" name="maxseatpostLen"></td></tr>
+        </tbody>
     </table>
 
-    <button type="button" class="submit-btn"">📤 Отправить на сервер</button>
-  </div>
+    <button type="button" class="submit-btn">📤 Отправить на сервер</button>
+</div>
 
-  <script type="module" src="{{ url_for('static', filename='js/add_bike.js') }}"></script>
-
+<script type="module" src="{{ url_for('static', filename='js/add_bike.js') }}"></script>
 </body>
 </html>

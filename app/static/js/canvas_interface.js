@@ -127,7 +127,8 @@ export class Interface {
             });
 
             if (!response.ok) throw new Error("Ошибка при получении данных");
-            this.savedBikes = await response.json();
+            const data = await response.json();
+            this.savedBikes = data.map(bike => bike.model);
         } catch (error) {
             console.error("Ошибка:", error);
             this.savedBikes = [];
@@ -218,7 +219,7 @@ export class Interface {
 
     async getBikeGeo(bike_id) {
         try {
-            const response = await fetch('/bikes/geo', {
+            const response = await fetch('/bikes/geometry', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ bike_id: bike_id })
@@ -287,7 +288,7 @@ export class Interface {
 
     async getAnthro() {
         try {
-            const response = await fetch('/fits/anthro', {
+            const response = await fetch('/fits/anthropometry', {
                 method: 'GET',
                 credentials: "include",
             });

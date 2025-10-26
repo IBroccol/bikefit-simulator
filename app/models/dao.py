@@ -5,7 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask import jsonify
 
 # --- Пользователи ---
-def create_user(username, password):
+def create_user_account(username, password):
     try:
         with get_conn() as conn:
             with conn.cursor() as cur:
@@ -19,20 +19,20 @@ def create_user(username, password):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-def verify_user(username, password):
-    user = get_user(username)
+def authenticate_user(username, password):
+    user = get_user_by_username(username)
     if user and check_password_hash(user["password_hash"], password):
         return {"id": user["id"], "role": user["role"]}
     return None
 
-def get_user(username):
+def get_user_by_username(username):
     with get_conn() as conn:
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute("SELECT * FROM users WHERE username=%s", (username,))
             return cur.fetchone()
 
 # --- Велосипеды ---
-def add_bike(user_id: int, bike: dict) -> dict:
+def add_user_bike(user_id: int, bike: dict) -> dict:
     """Добавляет велосипед пользователя в базу данных, создавая модель и размер при необходимости."""
 
     try:
@@ -100,28 +100,34 @@ def add_bike(user_id: int, bike: dict) -> dict:
         return {"success": False, "error": str(e)}
 
 
-def get_bike_geo(size_id):
+def get_bike_geometry(size_id):
     with get_conn() as conn:
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute("SELECT * FROM bike_sizes WHERE id=%s", (size_id,))
             return cur.fetchone()
 
-def get_user_bikes(user_id):
+def get_visiable_bike_models(user_id):
     with get_conn() as conn:
         with conn.cursor(row_factory=dict_row) as cur:
-            cur.execute("SELECT model FROM bike_models WHERE is_public OR user_id=%s ORDER BY model", (user_id,))
-            return [row["model"] for row in cur.fetchall()]
+            cur.execute("SELECT * FROM bike_models WHERE status = 'public' OR user_id=%s ORDER BY model", (user_id,))
+            return cur.fetchall()
+
+def get_user_bike_models(user_id):
+    with get_conn() as conn:
+        with conn.cursor(row_factory=dict_row) as cur:
+            cur.execute("SELECT * FROM bike_models WHERE user_id=%s ORDER BY model", (user_id,))
+            return cur.fetchall()
 
 def get_pending_bikes():
     with get_conn() as conn:
         with conn.cursor(row_factory=dict_row) as cur:
-            cur.execute("SELECT * FROM bike_models WHERE NOT is_public AND NOT is_moderated ORDER BY created_at")
+            cur.execute("SELECT * FROM bike_models WHERE status = 'pending' ORDER BY created_at")
             return cur.fetchall()
 
-def set_privacy(bike_id, is_public):
+def set_bike_visibility(bike_id, is_public):
     with get_conn() as conn:
         with conn.cursor(row_factory=dict_row) as cur:
-            cur.execute("UPDATE bike_models SET is_public = %s, is_moderated = TRUE WHERE id = %s", (is_public, bike_id))
+            cur.execute("UPDATE bike_models SET status = %s, is_moderated = TRUE WHERE id = %s", ('public' if is_public else 'private', bike_id))
             return {"success": True}   
 
 def get_bike_sizes(bike_model):
@@ -130,7 +136,7 @@ def get_bike_sizes(bike_model):
             cur.execute('SELECT size FROM bike_sizes bs JOIN bike_models bm ON bs.bike_model_id = bm.id WHERE bm.model=%s ORDER BY bs."seatTube"', (bike_model,))
             return [row["size"] for row in cur.fetchall()]
 
-def get_bike_id(bike_model, size):
+def get_bike_size_id(bike_model, size):
     with get_conn() as conn:
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute("SELECT bs.id FROM bike_sizes bs JOIN bike_models bm ON bs.bike_model_id = bm.id WHERE bm.model=%s AND bs.size=%s", (bike_model, size))
@@ -138,7 +144,7 @@ def get_bike_id(bike_model, size):
             return row["id"] if row else None
 
 # --- Антропометрия ---
-def add_anthropometry(user_id, data):
+def add_user_anthropometry(user_id, data):
     with get_conn() as conn:
         with conn.cursor() as cur:
             # добавляем user_id в словарь
@@ -158,7 +164,7 @@ def add_anthropometry(user_id, data):
             conn.commit()
             return {"success": True}
 
-def get_anthro_by_user(user_id):
+def get_latest_user_anthropometry(user_id):
     with get_conn() as conn:
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute("""
@@ -196,6 +202,7 @@ def save_fit_settings(user_id, data):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+
 def get_fit_by_name(fit_name, bike_id):
     with get_conn() as conn:
         with conn.cursor(row_factory=dict_row) as cur:
@@ -207,3 +214,17 @@ def get_user_fits(user_id, bike_id):
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute("SELECT name FROM fit_settings WHERE user_id=%s AND bike_id=%s", (user_id, bike_id))
             return [row["name"] for row in cur.fetchall()]
+        
+def delete_user_bike(user_id, bike_id):
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM bike_models WHERE id=%s AND user_id=%s", (bike_id, user_id))
+            conn.commit()
+            return {"success": True}
+        
+def set_bike_pending(bike_id, user_id):
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("UPDATE bike_models SET status = 'pending' WHERE id=%s AND user_id=%s", (bike_id, user_id))
+            conn.commit()
+            return {"success": True}

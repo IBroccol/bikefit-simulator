@@ -6,13 +6,13 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 @auth_bp.route("/register", methods=["POST"])
 def register():
     data = request.json
-    result = auth_service.register_user(data["username"], data["password"])
+    result = auth_service.create_user_account(data["username"], data["password"])
     return jsonify(result)
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
     data = request.json
-    user = auth_service.login_user(data["username"], data["password"])
+    user = auth_service.authenticate_user(data["username"], data["password"])
     if user:
         session["user_id"] = user["id"]
         session["user_role"] = user["role"]

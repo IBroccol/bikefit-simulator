@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", async() => {
     // === Получение списка велосипедов ===
     async function fetchBikes() {
         try {
-            const response = await fetch("/bikes/pending");
+            const response = await fetch("/bikes/user_bikes");
             if (!response.ok) {
                 bikesContainer.innerHTML = `<p style="color:red;">Ошибка загрузки данных (${response.status})</p>`;
                 return;
@@ -27,24 +27,46 @@ document.addEventListener("DOMContentLoaded", async() => {
                 item.className = "bike-item";
                 item.dataset.id = bike.id;
 
-                item.innerHTML = `
+                const ru_status = {
+                    'private': 'Приватный',
+                    'public': 'Публичный',
+                    'pending': 'На рассмотрении'
+                }
+
+                if (bike.status == 'private') {
+                    item.innerHTML = `
                     <div class="bike-info">
                         <h3>${bike.model}</h3>
-                        <p><b>ID:</b> ${bike.id}</p>
+                        <p><b>Статус:</b> ${ru_status[bike.status]}</p>
                         <p><b>Дата добавления:</b> ${new Date(bike.created_at).toLocaleString('ru-RU')}</p>
                     </div>
                     <div class="actions">
                         <button class="approve-btn" data-id="${bike.id}">Сделать публичной</button>
-                        <button class="reject-btn" data-id="${bike.id}">Отклонить</button>
+                        <button class="delete-btn" data-id="${bike.id}">Удалить</button>
                     </div>
                 `;
+                } else {
+                    item.innerHTML = `
+                    <div class="bike-info">
+                        <h3>${bike.model}</h3>
+                        <p><b>Статус:</b> ${ru_status[bike.status]}</p>
+                        <p><b>Дата добавления:</b> ${new Date(bike.created_at).toLocaleString('ru-RU')}</p>
+                    </div>
+                    <div class="actions">
+                        <button class="delete-btn" data-id="${bike.id}">Удалить</button>
+                    </div>
+                `;
+                }
 
                 // кнопки одобрения/отклонения
                 item.querySelectorAll("button").forEach(btn => {
                     btn.addEventListener("click", async(e) => {
                         e.stopPropagation();
-                        const is_public = btn.classList.contains("approve-btn");
-                        await updatePrivacy(bike.id, is_public);
+                        if (btn.classList.contains("approve-btn")) {
+                            await sendOnModeration(bike.id, true);
+                        } else {
+                            await deleteBike(bike.id);
+                        }
                     });
                 });
 
@@ -60,13 +82,33 @@ document.addEventListener("DOMContentLoaded", async() => {
     }
 
     // === Обновление статуса велосипеда ===
-    async function updatePrivacy(bike_id, is_public) {
+    async function sendOnModeration(bike_id) {
         try {
-            const response = await fetch("/bikes/set_visibility", {
+            const response = await fetch("/bikes/set_pending", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
-                body: JSON.stringify({ bike_id, is_public })
+                body: JSON.stringify({ bike_id })
+            });
+
+            if (response.ok) {
+                await fetchBikes();
+            } else {
+                alert("Ошибка при отправке на модерацию");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Ошибка при отправке запроса");
+        }
+    }
+
+    async function deleteBike(bike_id) {
+        try {
+            const response = await fetch("/bikes/delete", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ bike_id })
             });
 
             if (response.ok) {

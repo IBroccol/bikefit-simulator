@@ -1,9 +1,11 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory
-from app.models.dao import (
-    verify_user, create_user, get_user,
-    add_bike, add_anthropometry, get_anthro_by_user,
-    save_fit_settings
-)
+# from app.models.dao import (
+#     authenticate_user, create_user_account, get_user_by_username,
+#     add_user_bike, add_user_anthropometry, get_latest_user_anthropometry,
+#     save_fit_settings
+# )
+from app.services import auth_service
+
 from app.utils.geometry_calc import basic_fit
 from app.utils.decorators import auth_required, role_required
 from app.routes.auth import logout as auth_logout
@@ -18,8 +20,8 @@ def serve_js(filename):
 
 @pages_bp.route("/", methods=["GET", "POST"])
 def login_page():
-    # if "user_id" in session:
-        # return redirect(url_for("pages.dashboard"))
+    if "user_id" in session:
+        return redirect(url_for("pages.dashboard"))
     return render_template("login.html")
 
 
@@ -29,7 +31,7 @@ def register_page():
         username = request.form.get("username")
         password = request.form.get("password")
 
-        if create_user(username, password):
+        if auth_service.create_user_account(username, password):
             flash("Регистрация прошла успешно! Теперь войдите", "success")
             return redirect(url_for("pages.login_page"))
         else:
@@ -83,17 +85,11 @@ def canvas_page():
 def compare_page():
     return render_template("compare.html")
 
-@pages_bp.route("/save_fit", methods=["POST"])
+@pages_bp.route("/view")
 @auth_required
-def save_fit_page():
-    data = request.get_json()
-    if not data:
-        return jsonify({"success": False, "error": "Нет данных"})
-
-    user_id = session["user_id"]
-
-    save_fit_settings(user_id, data)
-    return jsonify({"success": True})
+def view_page():
+    print(session)
+    return render_template("view.html")
 
 # -------------------- Moderation --------------------
 

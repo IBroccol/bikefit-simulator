@@ -7,7 +7,7 @@ fits_bp = Blueprint("fits", __name__, url_prefix="/fits")
 def save_fit():
     user_id = session.get("user_id")
     data = request.json
-    result = fit_service.save_fit(user_id, data)
+    result = fit_service.save_fit_settings(user_id, data)
     return jsonify(result)
 
 @fits_bp.route("/get", methods=["POST"])
@@ -35,18 +35,18 @@ def get_basic_fit():
 def get_fit_names():
     user_id = session.get("user_id")
     bike_id = request.json.get("bike_id")
-    result = fit_service.get_fit_names(user_id, bike_id)
+    result = fit_service.get_user_fits(user_id, bike_id)
     return jsonify(result)
 
-@fits_bp.route("/add_anthro", methods=["POST"])
-def add_anthro_data():
+@fits_bp.route("/add_anthropometry", methods=["POST"])
+def add_user_anthropometry():
     user_id = session.get("user_id")
     data = request.json
-    result = fit_service.add_anthro(user_id, data)
+    result = fit_service.add_user_anthropometry(user_id, data)
     return jsonify(result)
 
-@fits_bp.route("/anthro", methods=["GET"])
-def get_anthro_data():
+@fits_bp.route("/anthropometry", methods=["GET"])
+def get_latest_user_anthropometry():
     user_id = session.get("user_id")
-    result = fit_service.get_anthro(user_id)
+    result = fit_service.get_latest_user_anthropometry(user_id)
     return jsonify(result)

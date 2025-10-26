@@ -1,10 +1,10 @@
 from app.models import dao
 
-def register_user(username, password):
-    return dao.create_user(username, password)
+def create_user_account(username, password):
+    return dao.create_user_account(username, password)
 
-def login_user(username, password):
-    return dao.verify_user(username, password)
+def authenticate_user(username, password):
+    return dao.authenticate_user(username, password)
 
-def get_user(username):
-    return dao.get_user(username)
+def get_user_by_username(username):
+    return dao.get_user_by_username(username)

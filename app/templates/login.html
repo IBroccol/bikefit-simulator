@@ -98,7 +98,7 @@
             <button type="submit">Войти</button>
         </form>
 
-        <a href="/register">Нет аккаунта? Зарегистрироваться</a>
+        <a href="{{ url_for('pages.register_page') }}">Нет аккаунта? Зарегистрироваться</a>
 
         <script>
         document.getElementById("loginForm").addEventListener("submit", async (e) => {

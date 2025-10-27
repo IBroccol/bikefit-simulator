@@ -406,7 +406,7 @@ export class Drawer {
 
         let shoulderCircle = new Circle({ scope: this.scope, center: arc_center, radius: distance(arc_center, TorsoMid), visible: false })
 
-        let circle0 = new Circle({ scope: this.scope, center: this.rider.Hands, radius: (this.ANTROPOMETRICS['upperarm'] + this.ANTROPOMETRICS['forearm']) * 0.999, visible: false })
+        let circle0 = new Circle({ scope: this.scope, center: this.rider.Hands, radius: (this.ANTROPOMETRICS['upperarm'] + this.ANTROPOMETRICS['forearm'] * 1.2) * 0.999, visible: false })
         let TorsoMaxValid = new Point({ scope: this.scope, x: 0, y: 0, dependencies: [circle0, shoulderCircle], visible: false })
         let temp = middle_perpendicular(this.scope, TorsoMaxValid, TorsoMin)
         let TorsoMidValid = new Point({ scope: this.scope, x: inf, y: temp.y, dependencies: [shoulderCircle, temp], visible: false })
@@ -423,7 +423,7 @@ export class Drawer {
 
     drawArms() {
         let circle0 = new Circle({ scope: this.scope, center: this.rider.Shoulder, radius: this.ANTROPOMETRICS['upperarm'], visible: false })
-        let circle1 = new Circle({ scope: this.scope, center: this.rider.Hands, radius: this.ANTROPOMETRICS['forearm'], visible: false })
+        let circle1 = new Circle({ scope: this.scope, center: this.rider.Hands, radius: this.ANTROPOMETRICS['forearm'] * 1.2, visible: false })
         this.rider.Elbow = new Point({ scope: this.scope, x: 0, y: 0, dependencies: [circle0, circle1], visible: false })
 
         this.rider.Upperarm = new Segment({ scope: this.scope, p1: this.rider.Shoulder, p2: this.rider.Elbow })

@@ -11,13 +11,13 @@ def create_user_account(username, password):
             with conn.cursor() as cur:
                 cur.execute("SELECT id FROM users WHERE username=%s", (username,))
                 if cur.fetchone():
-                    return {"success": False}
+                    return {"success": False, "errors": [{"field": "username", "message": "Пользователь с таким именем уже существует"}]}
                 password_hash = generate_password_hash(password)
                 cur.execute("INSERT INTO users (username, password_hash) VALUES (%s, %s)", (username, password_hash))
                 conn.commit()
                 return {"success": True}
     except Exception as e:
-        return {"success": False, "error": str(e)}
+        return {"success": False, "errors": [{"field": "general", "message": str(e)}]}
 
 def authenticate_user(username, password):
     user = get_user_by_username(username)
@@ -41,7 +41,7 @@ def add_user_bike(user_id: int, bike: dict) -> dict:
             size = bike.get("size")
 
             if not model_name or not size:
-                return {"success": False, "error": "Model name and size are required"}
+                return {"success": False, "errors": [{"field": "data", "message": "Model name and size are required"}]}
 
             cur.execute(
                 """
@@ -97,8 +97,7 @@ def add_user_bike(user_id: int, bike: dict) -> dict:
             return {"success": True, "bike_model_id": bike_model_id}
 
     except Exception as e:
-        return {"success": False, "error": str(e)}
-
+        return {"success": False, "errors": [{"field": "general", "message": str(e)}]}
 
 def get_bike_geometry(size_id):
     with get_conn() as conn:
@@ -130,11 +129,11 @@ def set_bike_visibility(bike_id, is_public):
             cur.execute("UPDATE bike_models SET status = %s, is_moderated = TRUE WHERE id = %s", ('public' if is_public else 'private', bike_id))
             return {"success": True}   
 
-def get_bike_sizes(bike_model):
+def get_bike_sizes(bike_model_id):
     with get_conn() as conn:
         with conn.cursor(row_factory=dict_row) as cur:
-            cur.execute('SELECT size FROM bike_sizes bs JOIN bike_models bm ON bs.bike_model_id = bm.id WHERE bm.model=%s ORDER BY bs."seatTube"', (bike_model,))
-            return [row["size"] for row in cur.fetchall()]
+            cur.execute('SELECT size, id FROM bike_sizes WHERE bike_model_id = %s ORDER BY "seatTube"', (bike_model_id,))
+            return cur.fetchall()
 
 def get_bike_size_id(bike_model, size):
     with get_conn() as conn:
@@ -189,7 +188,7 @@ def save_fit_settings(user_id, data):
                     VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
                 """, (
                     user_id,
-                    data["bike_id"],
+                    data["size_id"],
                     data["name"],
                     data["seatHight"],
                     data["stemHight"],
@@ -202,17 +201,16 @@ def save_fit_settings(user_id, data):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-
-def get_fit_by_name(fit_name, bike_id):
+def get_fit_by_name(fit_name, size_id):
     with get_conn() as conn:
         with conn.cursor(row_factory=dict_row) as cur:
-            cur.execute("SELECT * FROM fit_settings WHERE name=%s AND bike_id=%s", (fit_name, bike_id))
+            cur.execute("SELECT * FROM fit_settings WHERE name=%s AND bike_id=%s", (fit_name, size_id))
             return cur.fetchone()
 
-def get_user_fits(user_id, bike_id):
+def get_user_fits(user_id, size_id):
     with get_conn() as conn:
         with conn.cursor(row_factory=dict_row) as cur:
-            cur.execute("SELECT name FROM fit_settings WHERE user_id=%s AND bike_id=%s", (user_id, bike_id))
+            cur.execute("SELECT name FROM fit_settings WHERE user_id=%s AND bike_id=%s", (user_id, size_id))
             return [row["name"] for row in cur.fetchall()]
         
 def delete_user_bike(user_id, bike_id):

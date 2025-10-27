@@ -17,32 +17,79 @@
             {% endif %}
         {% endwith %}
 
-        <form id="loginForm">
-            <input type="text" name="username" placeholder="Логин" required>
-            <input type="password" name="password" placeholder="Пароль" required>
-            <button type="submit" class="btn btn-primary btn-block">Войти</button>
+        <div id="error-container" class="error-container" style="display: none;"></div>
+        
+        <form id="login-form" method="POST">
+            <div class="form-group">
+                <input type="text" id="username" name="username" placeholder="Логин" required>
+                <div class="field-error" id="username-error"></div>
+            </div>
+            <div class="form-group">
+                <input type="password" id="password" name="password" placeholder="Пароль" required>
+                <div class="field-error" id="password-error"></div>
+            </div>
+            <button type="submit" class="btn btn-success btn-block">Войти</button>
         </form>
 
         <a href="{{ url_for('pages.register_page') }}" class="text-center">Нет аккаунта? Зарегистрироваться</a>
     </div>
 
     <script>
-        document.getElementById("loginForm").addEventListener("submit", async (e) => {
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const username = e.target.username.value;
-            const password = e.target.password.value;
-
-            const response = await fetch("/auth/login", {
-                method: "POST",
-                credentials: "include",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password })
-            });
-
-            if (response.ok) {
-                window.location.href = "/dashboard";
-            } else {
-                alert("Неверный логин или пароль");
+            
+            const errorContainer = document.getElementById('error-container');
+            const usernameError = document.getElementById('username-error');
+            const passwordError = document.getElementById('password-error');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            
+            // Сброс ошибок и стилей
+            errorContainer.style.display = 'none';
+            errorContainer.innerHTML = '';
+            usernameError.textContent = '';
+            passwordError.textContent = '';
+            usernameInput.classList.remove('error');
+            passwordInput.classList.remove('error');
+            
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value;
+            
+            try {
+                const response = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    window.location.href = '/dashboard';
+                } else {
+                    if (result.errors) {
+                        result.errors.forEach(error => {
+                            if (error.field === 'username') {
+                                usernameError.textContent = error.message;
+                                usernameInput.classList.add('error');
+                            } else if (error.field === 'password') {
+                                passwordError.textContent = error.message;
+                                passwordInput.classList.add('error');
+                            } else if (error.field === 'data' || error.field === 'general') {
+                                errorContainer.textContent = error.message;
+                                errorContainer.style.display = 'block';
+                            }
+                        });
+                    } else {
+                        errorContainer.textContent = result.error || 'Ошибка авторизации';
+                        errorContainer.style.display = 'block';
+                    }
+                }
+            } catch (error) {
+                errorContainer.textContent = 'Ошибка сети. Попробуйте еще раз.';
+                errorContainer.style.display = 'block';
             }
         });
     </script>

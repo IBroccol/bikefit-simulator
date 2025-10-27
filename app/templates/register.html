@@ -17,13 +17,81 @@
             {% endif %}
         {% endwith %}
         
-        <form method="POST">
-            <input type="text" name="username" placeholder="Логин" required>
-            <input type="password" name="password" placeholder="Пароль" required>
+        <div id="error-container" class="error-container" style="display: none;"></div>
+        
+        <form id="register-form" method="POST">
+            <div class="form-group">
+                <input type="text" id="username" name="username" placeholder="Логин" required>
+                <div class="field-error" id="username-error"></div>
+            </div>
+            <div class="form-group">
+                <input type="password" id="password" name="password" placeholder="Пароль" required>
+                <div class="field-error" id="password-error"></div>
+            </div>
             <button type="submit" class="btn btn-success btn-block">Зарегистрироваться</button>
         </form>
         
         <a href="{{ url_for('pages.login_page') }}" class="text-center">Вернуться к авторизации</a>
     </div>
+
+    <script>
+        document.getElementById('register-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const errorContainer = document.getElementById('error-container');
+            const usernameError = document.getElementById('username-error');
+            const passwordError = document.getElementById('password-error');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            
+            // Сброс ошибок и стилей
+            errorContainer.style.display = 'none';
+            errorContainer.innerHTML = '';
+            usernameError.textContent = '';
+            passwordError.textContent = '';
+            usernameInput.classList.remove('error');
+            passwordInput.classList.remove('error');
+            
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value;
+            
+            try {
+                const response = await fetch('/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    window.location.href = '/';
+                } else {
+                    if (result.errors) {
+                        result.errors.forEach(error => {
+                            if (error.field === 'username') {
+                                usernameError.textContent = error.message;
+                                usernameInput.classList.add('error');
+                            } else if (error.field === 'password') {
+                                passwordError.textContent = error.message;
+                                passwordInput.classList.add('error');
+                            } else if (error.field === 'data' || error.field === 'general') {
+                                errorContainer.textContent = error.message;
+                                errorContainer.style.display = 'block';
+                            }
+                        });
+                    } else {
+                        errorContainer.textContent = result.error || 'Произошла ошибка при регистрации';
+                        errorContainer.style.display = 'block';
+                    }
+                }
+            } catch (error) {
+                errorContainer.textContent = 'Ошибка сети. Попробуйте еще раз.';
+                errorContainer.style.display = 'block';
+            }
+        });
+    </script>
 </body>
 </html>

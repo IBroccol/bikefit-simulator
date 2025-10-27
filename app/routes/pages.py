@@ -67,10 +67,10 @@ def add_bike_page():
 
 # -------------------- Add Anthropometry --------------------
 
-@pages_bp.route("/add_anthro")
+@pages_bp.route("/add_anthropometry")
 @auth_required
 def add_anthro_page():
-    return render_template("add_anthro.html")
+    return render_template("add_anthropometry.html")
 
 
 # -------------------- Canvas / Fit --------------------

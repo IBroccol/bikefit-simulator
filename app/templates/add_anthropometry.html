@@ -14,6 +14,9 @@
 
     <h2>Антропометрические данные</h2>
     
+    <div id="error-container" class="error-container" style="display: none;"></div>
+    <div id="success-container" class="success-container" style="display: none;"></div>
+    
     <form id="anthroForm" class="anthro-form">
         <div class="form-section">
             <h3>Основные параметры</h3>
@@ -25,6 +28,7 @@
                 <span class="field-label">Рост, см</span>
                 <div class="field-input">
                     <input type="number" step="1" name="height" required placeholder="170">
+                    <div class="field-error" id="height-error"></div>
                 </div>
             </div>
         </div>
@@ -38,7 +42,8 @@
                 </div>
                 <span class="field-label">Длина бедра, мм</span>
                 <div class="field-input">
-                    <input type="number" step="0.1" name="hip" required placeholder="450">
+                    <input type="number" step="1" name="hip" required placeholder="450">
+                    <div class="field-error" id="hip-error"></div>
                 </div>
             </div>
 
@@ -48,7 +53,8 @@
                 </div>
                 <span class="field-label">Длина голени, мм</span>
                 <div class="field-input">
-                    <input type="number" step="0.1" name="lowerLeg" required placeholder="400">
+                    <input type="number" step="1" name="lowerLeg" required placeholder="400">
+                    <div class="field-error" id="lowerLeg-error"></div>
                 </div>
             </div>
 
@@ -58,7 +64,8 @@
                 </div>
                 <span class="field-label">Длина стопы, мм</span>
                 <div class="field-input">
-                    <input type="number" step="0.1" name="footLength" required placeholder="260">
+                    <input type="number" step="1" name="footLength" required placeholder="260">
+                    <div class="field-error" id="footLength-error"></div>
                 </div>
             </div>
         </div>
@@ -72,7 +79,8 @@
                 </div>
                 <span class="field-label">Длина туловища, мм</span>
                 <div class="field-input">
-                    <input type="number" step="0.1" name="torsoMax" required placeholder="600">
+                    <input type="number" step="1" name="torsoMax" required placeholder="600">
+                    <div class="field-error" id="torsoMax-error"></div>
                 </div>
             </div>
 
@@ -82,7 +90,8 @@
                 </div>
                 <span class="field-label">Длина плеча, мм</span>
                 <div class="field-input">
-                    <input type="number" step="0.1" name="upperarm" required placeholder="320">
+                    <input type="number" step="1" name="upperarm" required placeholder="320">
+                    <div class="field-error" id="upperarm-error"></div>
                 </div>
             </div>
 
@@ -92,7 +101,8 @@
                 </div>
                 <span class="field-label">Длина предплечья, мм</span>
                 <div class="field-input">
-                    <input type="number" step="0.1" name="forearm" required placeholder="280">
+                    <input type="number" step="1" name="forearm" required placeholder="280">
+                    <div class="field-error" id="forearm-error"></div>
                 </div>
             </div>
         </div>
@@ -104,8 +114,50 @@
 </div>
 
 <script>
+function clearErrors() {
+    const errorContainer = document.getElementById('error-container');
+    const successContainer = document.getElementById('success-container');
+    
+    errorContainer.style.display = 'none';
+    errorContainer.innerHTML = '';
+    successContainer.style.display = 'none';
+    successContainer.innerHTML = '';
+    
+    document.querySelectorAll('.field-error').forEach(el => el.textContent = '');
+    document.querySelectorAll('input').forEach(el => el.classList.remove('error'));
+}
+
+function showErrors(errors) {
+    errors.forEach(error => {
+        const fieldError = document.getElementById(`${error.field}-error`);
+        const input = document.querySelector(`[name="${error.field}"]`);
+        
+        if (fieldError && input) {
+            fieldError.textContent = error.message;
+            input.classList.add('error');
+        } else if (error.field === 'data' || error.field === 'general') {
+            const errorContainer = document.getElementById('error-container');
+            errorContainer.textContent = error.message;
+            errorContainer.style.display = 'block';
+        }
+    });
+}
+
+function showSuccess(message) {
+    const successContainer = document.getElementById('success-container');
+    successContainer.textContent = message;
+    successContainer.style.display = 'block';
+    
+    // Скрыть через 3 секунды
+    setTimeout(() => {
+        successContainer.style.display = 'none';
+    }, 3000);
+}
+
 document.getElementById("anthroForm").addEventListener("submit", async (e) => {
     e.preventDefault();
+    clearErrors();
+    
     const form = e.target;
     const formData = new FormData(form);
 
@@ -123,29 +175,40 @@ document.getElementById("anthroForm").addEventListener("submit", async (e) => {
         });
 
         const result = await response.json();
-        if (response.ok) {
-            alert("✅ Данные успешно сохранены!");
+        
+        if (result.success) {
+            showSuccess("✅ Данные успешно сохранены!");
         } else {
-            alert("❌ Ошибка: " + (result.error || "Не удалось сохранить"));
+            if (result.errors) {
+                showErrors(result.errors);
+            } else {
+                const errorContainer = document.getElementById('error-container');
+                errorContainer.textContent = result.error || "Не удалось сохранить данные";
+                errorContainer.style.display = 'block';
+            }
         }
     } catch (err) {
         console.error("Ошибка при отправке:", err);
-        alert("❌ Ошибка при отправке данных на сервер");
+        const errorContainer = document.getElementById('error-container');
+        errorContainer.textContent = "Ошибка сети. Попробуйте еще раз.";
+        errorContainer.style.display = 'block';
     }
 });
 
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        const response = await fetch('/fits/anthropometry');
-        if (!response.ok) throw new Error('Ошибка при загрузке данных');
-        const data = await response.json();
+        const response = await fetch('/fits/get_anthropometry', {
+            credentials: "include"
+        });
+        
+        const result = await response.json();
 
-        if (data) {
+        if (result.success && result.data) {
             const form = document.getElementById('anthroForm');
-            Object.keys(data).forEach(key => {
+            Object.keys(result.data).forEach(key => {
                 const input = form.querySelector(`[name="${key}"]`);
-                if (input && data[key] !== null) {
-                    input.value = data[key];
+                if (input && result.data[key] !== null) {
+                    input.value = result.data[key];
                 }
             });
         }

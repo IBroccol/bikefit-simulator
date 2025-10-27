@@ -22,22 +22,23 @@ export class InterfacePreview {
         // });
     }
 
-    async fetchSizes(bike_model) {
+    async fetchSizes(bike_model_id) {
         try {
             const response = await fetch('/bikes/sizes', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ bike_model })
+                body: JSON.stringify({ bike_model_id })
             });
             if (!response.ok) throw new Error("Ошибка при получении размеров");
-            return await response.json();
+            const result = await response.json();
+            return result.success ? result.data : [];
         } catch (error) {
             console.error("Ошибка при загрузке размеров:", error);
             return [];
         }
     }
 
-    async onBikeSelect(bike_model) {
+    async onBikeSelect(bike_model, bike_model_id) {
         this.cur_bike_model = bike_model;
 
         // Очистим canvas при смене модели
@@ -48,7 +49,7 @@ export class InterfacePreview {
         sizeContainer.innerHTML = "";
 
         // Получаем размеры для выбранной модели
-        const sizes = await this.fetchSizes(bike_model);
+        const sizes = await this.fetchSizes(bike_model_id);
 
         if (sizes.length === 0) {
             sizeContainer.innerHTML = "<p style='color:#777;'>Нет доступных размеров</p>";
@@ -56,9 +57,9 @@ export class InterfacePreview {
         }
 
         // Создаём кнопки для каждого размера
-        sizes.forEach(size => {
+        sizes.forEach(sizeObj => {
             const btn = document.createElement("button");
-            btn.textContent = size;
+            btn.textContent = sizeObj.size;
             btn.className = "size-btn";
 
             btn.addEventListener("click", async() => {
@@ -66,14 +67,13 @@ export class InterfacePreview {
                 document.querySelectorAll(".size-btn").forEach(b => b.classList.remove("active"));
                 btn.classList.add("active");
 
-                this.cur_size = size;
-                await this.onSizeChoice(size);
+                this.cur_size = sizeObj.size;
+                await this.onSizeChoice(sizeObj.size);
             });
 
             sizeContainer.appendChild(btn);
         });
     }
-
 
     renderSizeOptions(sizes) {
         this.sizeSelect.innerHTML = `<option value="">Выберите размер...</option>`;
@@ -88,9 +88,9 @@ export class InterfacePreview {
     async onSizeChoice(size) {
         this.cur_size = size;
         this.drawer.blur()
-        let bike_id = await this.fetchBikeId()
+        let size_id = await this.fetchBikeId()
         try {
-            const bike_geo = await this.getBikeGeo(bike_id);
+            const bike_geo = await this.getBikeGeo(size_id);
             this.drawer.INIT_GEOMETRY = bike_geo;
             this.drawer.draw_preview();
         } catch (err) {
@@ -98,15 +98,16 @@ export class InterfacePreview {
         }
     }
 
-    async getBikeGeo(bike_id) {
+    async getBikeGeo(size_id) {
         try {
             const response = await fetch("/bikes/geometry", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ bike_id })
+                body: JSON.stringify({ size_id })
             });
-            if (response.ok) return await response.json();
-            throw new Error("Ошибка при получении геометрии");
+            if (!response.ok) throw new Error("Ошибка при получении геометрии");
+            const result = await response.json();
+            return result.success ? result.data : null;
         } catch (error) {
             console.error("Ошибка при запросе /bikes/geometry:", error);
             throw error;
@@ -122,10 +123,11 @@ export class InterfacePreview {
             });
 
             if (!response.ok) throw new Error("Ошибка при получении данных");
-            return await response.json();
+            const result = await response.json();
+            return result.success ? result.data : null;
         } catch (error) {
             console.error("Ошибка:", error);
-            return [];
+            return null;
         }
     }
 }

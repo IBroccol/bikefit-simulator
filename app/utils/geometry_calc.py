@@ -17,7 +17,7 @@ def basic_fit(geometry, anthropometry):
     seat = [-seatHight * cos(radians(geometry['seatAngle'])), seatHight * sin(radians(geometry['seatAngle']))]
     hands = [geometry['reach'] + geometry['stemLen'] + geometry['barReach'] + geometry['shifterReach'],
              geometry['stack'] + stemHight]
-    armsLen = cos_th(anthropometry['upperarm'], anthropometry['forearm'], 155)
+    armsLen = cos_th(anthropometry['upperarm'], anthropometry['forearm'] * 1.2, 155)
     torsoLen = anthropometry['torsoMid']
 
     torsoAngle = angle_by_sides(dist(seat, hands), torsoLen, armsLen) + degrees(math.atan((hands[1]-seat[1])/(hands[0]-seat[0])))

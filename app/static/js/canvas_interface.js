@@ -4,7 +4,7 @@ import { distance } from './geometry-helpers.js'
 export class Interface {
     constructor(element_ids) {
         console.log(element_ids)
-        this.cur_bike_id = null;
+        this.cur_bike_model_id = null;
         this.cur_fit_name = null;
 
         this.drawer = new Drawer(element_ids.canvas)
@@ -39,8 +39,6 @@ export class Interface {
         });
         this.setupAutocompleteHide(this.bikeList, this.bikeSearch);
 
-
-
         this.sizeSelect.addEventListener("change", () => {
             const size = this.sizeSelect.value;
             if (size !== "Select size") {
@@ -58,18 +56,35 @@ export class Interface {
         this.setupAutocompleteHide(this.fitList, this.fitSearch);
     }
 
-    async fetchSizes(bike_model) {
+    async fetchSizes(bike_model_id) {
         try {
             const response = await fetch('/bikes/sizes', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ bike_model })
+                body: JSON.stringify({ bike_model_id })
             });
 
-            if (!response.ok) throw new Error("Ошибка при получении размеров");
-            return await response.json(); // ожидается массив размеров
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || "Ошибка при получении размеров");
+            }
+
+            const result = await response.json();
+            if (!result.success) {
+                throw new Error(result.error || "Ошибка при получении размеров");
+            }
+
+            // Сохраняем размеры с их ID
+            this.savedSizes = {};
+            const sizes = [];
+            result.data.forEach(item => {
+                this.savedSizes[item.size] = item.id;
+                sizes.push(item.size);
+            });
+            return sizes;
         } catch (error) {
             console.error("Ошибка:", error);
+            this.showError("Не удалось загрузить размеры велосипеда: " + error.message);
             return [];
         }
     }
@@ -85,38 +100,21 @@ export class Interface {
     }
 
     async onSizeChoise(size) {
-        this.cur_size = size
-        this.drawer.blur()
-            //console.log("Выбран размер:", size);
-        let bike_id = await this.fetchBikeId()
-            //console.log("bike_id:", bike_id)
-        const bike_geo = await this.getBikeGeo(bike_id)
-        this.drawer.INIT_GEOMETRY = bike_geo
-        if (bike_id != this.cur_bike_id) {
+        if (size != this.cur_size) {
             this.fitSearch.value = ""
             this.fitInput.value = ""
         }
-        this.cur_bike_id = bike_id
-            //console.log(bike_geo)
+        this.cur_size = size
 
-        this.drawer.INIT_FIT = await this.getBasicFitData(bike_id)
+        this.cur_size_id = this.savedSizes[size];
+        this.drawer.blur()
+
+        const bike_geo = await this.getBikeGeo(this.cur_size_id)
+        this.drawer.INIT_GEOMETRY = bike_geo
+
+        this.drawer.INIT_FIT = await this.getBasicFitData(this.cur_size_id)
+        console.log(this.drawer)
         this.drawer.draw()
-    }
-
-    async fetchBikeId() {
-        try {
-            const response = await fetch('/bikes/id', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ bike_model: this.cur_bike_model, size: this.cur_size })
-            });
-
-            if (!response.ok) throw new Error("Ошибка при получении данных");
-            return await response.json();
-        } catch (error) {
-            console.error("Ошибка:", error);
-            return [];
-        }
     }
 
     async fetchBikes() {
@@ -126,17 +124,26 @@ export class Interface {
                 credentials: "include",
             });
 
-            if (!response.ok) throw new Error("Ошибка при получении данных");
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || "Ошибка при получении данных");
+            }
+
             const data = await response.json();
-            this.savedBikes = data.map(bike => bike.model);
+            // Создаем словарь с ключом bike.model и значением bike.id
+            this.savedBikes = {};
+            data.data.forEach(bike => {
+                this.savedBikes[bike.model] = bike.id;
+            });
         } catch (error) {
             console.error("Ошибка:", error);
-            this.savedBikes = [];
+            this.savedBikes = {};
+            this.showError("Не удалось загрузить список велосипедов: " + error.message);
         }
     }
 
     async fetchFits() {
-        if (this.cur_bike_id === null) {
+        if (this.cur_bike_model_id === null) {
             console.error("Ошибка: не выбран велосипед");
             return [];
         }
@@ -145,20 +152,32 @@ export class Interface {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: "include",
-                body: JSON.stringify({ bike_id: this.cur_bike_id })
+                body: JSON.stringify({ bike_id: this.cur_bike_model_id, size_id: this.cur_size_id })
             });
 
-            if (!response.ok) throw new Error("Ошибка при получении данных");
-            return await response.json();
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Ошибка при получении данных');
+            }
+
+            const result = await response.json();
+            if (!result.success) {
+                throw new Error(result.error || 'Ошибка при получении данных');
+            }
+
+            return result.data;
         } catch (error) {
-            console.error("Ошибка:", error);
+            console.error('Ошибка:', error);
+            this.showError('Не удалось загрузить посадки: ' + error.message);
             return [];
         }
     }
 
     renderAutocompleteList(list, items, input, click_fun) {
         list.innerHTML = "";
-        items.forEach(item => {
+        // Если items - это словарь, получаем ключи для отображения
+        const itemKeys = Array.isArray(items) ? items : Object.keys(items);
+        itemKeys.forEach(item => {
             const listItem = document.createElement("div");
             listItem.textContent = item;
             listItem.classList.add("autocomplete-item");
@@ -171,7 +190,7 @@ export class Interface {
 
             list.appendChild(listItem);
         });
-        list.style.display = items.length ? "block" : "none";
+        list.style.display = itemKeys.length ? "block" : "none";
     }
 
     setupAutocompleteHide(list, input) {
@@ -186,8 +205,8 @@ export class Interface {
         const name = this.fitInput.value.trim();
 
         if (!name) {
-            alert("Введите название посадки перед сохранением!");
-            document.getElementById("fit-name").focus();
+            this.showError("Введите название посадки перед сохранением!");
+            document.getElementById("fitInput").focus();
             return;
         }
 
@@ -204,82 +223,120 @@ export class Interface {
                 body: JSON.stringify(fitSettings)
             });
 
-            var data = await response.json()
+            const result = await response.json();
 
-            if (data.success) {
-                alert("Настройки успешно сохранены!");
+            if (result.success) {
+                this.showSuccess("Настройки успешно сохранены!");
+                this.fitInput.value = "";
             } else {
-                alert("Ошибка при сохранении!");
+                if (result.errors) {
+                    const errorMsg = result.errors.map(e => e.message).join(", ");
+                    this.showError("Ошибка валидации: " + errorMsg);
+                } else {
+                    this.showError(result.error || "Ошибка при сохранении!");
+                }
             }
         } catch (error) {
             console.error("Ошибка:", error);
+            this.showError("Ошибка сети при сохранении: " + error.message);
         }
-        this.fitInput.value = ""
     }
 
-    async getBikeGeo(bike_id) {
+    async getBikeGeo(size_id) {
         try {
             const response = await fetch('/bikes/geometry', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ bike_id: bike_id })
+                body: JSON.stringify({ size_id: size_id })
             });
 
-            if (response.ok) return await response.json();
-            throw new Error('Ошибка при получении данных');
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Ошибка при получении данных');
+            }
+
+            const result = await response.json();
+            if (!result.success) {
+                throw new Error(result.error || 'Ошибка при получении данных');
+            }
+
+            return result.data;
         } catch (error) {
             console.error('Ошибка:', error);
+            this.showError('Не удалось загрузить геометрию велосипеда: ' + error.message);
             throw error;
         }
     }
 
-    async getFitData(fit_name, bike_id) {
+    async getFitData(fit_name, size_id) {
         try {
             const response = await fetch('/fits/get', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: "include",
-                body: JSON.stringify({ fit_name: fit_name, bike_id: bike_id })
+                body: JSON.stringify({ fit_name: fit_name, size_id: size_id })
             });
 
-            if (response.ok) return await response.json();
-            throw new Error('Ошибка при получении данных');
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Ошибка при получении данных');
+            }
+
+            const result = await response.json();
+            if (!result.success) {
+                throw new Error(result.error || 'Ошибка при получении данных');
+            }
+
+            return result.data;
         } catch (error) {
             console.error('Ошибка:', error);
+            this.showError('Не удалось загрузить посадку: ' + error.message);
             throw error;
         }
     }
 
-    async getBasicFitData(bike_id) {
+    async getBasicFitData(size_id) {
         try {
             const response = await fetch('/fits/basic', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: "include",
-                body: JSON.stringify({ bike_id: bike_id })
+                body: JSON.stringify({ size_id: size_id })
             });
 
-            if (response.ok) return await response.json();
-            throw new Error('Ошибка при получении данных');
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Ошибка при получении данных');
+            }
+
+            const result = await response.json();
+            if (!result.success) {
+                throw new Error(result.error || 'Ошибка при получении данных');
+            }
+
+            return result.data;
         } catch (error) {
             console.error('Ошибка:', error);
+            this.showError('Не удалось загрузить базовую посадку: ' + error.message);
             throw error;
         }
     }
 
     async onBikeChoise(bike_model) {
-        //console.log(bike_model)
-        const sizes = await this.fetchSizes(bike_model);
-        this.renderSizeOptions(sizes);
         if (bike_model != this.cur_bike_model)
             this.drawer.clearCanvas()
+        this.fitSearch.value = ""
+        this.fitInput.value = ""
         this.cur_bike_model = bike_model
+        this.cur_bike_model_id = this.savedBikes[bike_model];
 
+        const sizes = await this.fetchSizes(this.cur_bike_model_id);
+        this.renderSizeOptions(sizes);
     }
 
     async onFitChoise(fit_name) {
         this.drawer.blur()
-        const fit_data = await this.getFitData(fit_name, this.cur_bike_id)
+        const fit_data = await this.getFitData(fit_name, this.cur_size_id)
         this.drawer.INIT_FIT = fit_data
         this.cur_fit_name = fit_name
             //console.log(fit_data)
@@ -288,26 +345,45 @@ export class Interface {
 
     async getAnthro() {
         try {
-            const response = await fetch('/fits/anthropometry', {
+            const response = await fetch('/fits/get_anthropometry', {
                 method: 'GET',
                 credentials: "include",
             });
 
-            if (response.ok) {
-                this.drawer.INIT_ANTROPOMETRICS = await response.json();
-                //console.log(this.drawer.INIT_ANTROPOMETRICS)
-            } else
-                throw new Error('Ошибка при получении данных');
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Ошибка при получении данных');
+            }
+
+            const result = await response.json();
+            if (!result.success) {
+                throw new Error(result.error || 'Ошибка при получении данных');
+            }
+
+            // Проверяем, не вернул ли запрос пустой ответ
+            if (!result.data || Object.keys(result.data).length === 0) {
+                // Показываем всплывающее окно с просьбой ввести антропометрию
+                this.showError("Пожалуйста, введите ваши антропометрические данные перед тем, как строить посадку. Вы будете перенаправлены на страницу настроек.");
+
+                // Перенаправляем на страницу настроек антропометрии
+                window.location.href = '/add_anthropometry';
+                return;
+            }
+
+            this.drawer.INIT_ANTROPOMETRICS = result.data;
+            //console.log(this.drawer.INIT_ANTROPOMETRICS)
         } catch (error) {
             console.error('Ошибка:', error);
-            throw error;
+            // В случае ошибки сети или сервера также перенаправляем на страницу настроек
+            this.showError("Произошла ошибка при загрузке антропометрических данных. Вы будете перенаправлены на страницу настроек.");
+            window.location.href = '/add_anthropometry';
         }
     }
 
     getFitSettings() {
         //console.log(this)
         var fitSettings = {
-            bike_id: this.cur_bike_id,
+            size_id: this.cur_size_id,
             seatHight: distance(this.drawer.bike.BottomBracket, this.drawer.bike.SeatpostTop) / this.drawer.scale + this.drawer.INIT_GEOMETRY['saddleHeight'],
             stemHight: distance(this.drawer.bike.TopTube.p1, this.drawer.bike.Stem.p1) / this.drawer.scale,
             saddleOffset: (this.drawer.bike.Saddle.x - this.drawer.bike.SeatpostTop.x) / this.drawer.scale,
@@ -316,5 +392,69 @@ export class Interface {
         };
 
         return fitSettings
+    }
+
+    showError(message) {
+        // Создаем или находим контейнер для ошибок
+        let errorContainer = document.getElementById('error-container');
+        if (!errorContainer) {
+            errorContainer = document.createElement('div');
+            errorContainer.id = 'error-container';
+            errorContainer.className = 'error-container';
+            errorContainer.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #f8d7da;
+                color: #721c24;
+                padding: 15px;
+                border-radius: 6px;
+                border: 1px solid #f5c6cb;
+                max-width: 400px;
+                z-index: 1000;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            `;
+            document.body.appendChild(errorContainer);
+        }
+
+        errorContainer.textContent = message;
+        errorContainer.style.display = 'block';
+
+        // Автоматически скрываем через 5 секунд
+        setTimeout(() => {
+            errorContainer.style.display = 'none';
+        }, 5000);
+    }
+
+    showSuccess(message) {
+        // Создаем или находим контейнер для успехов
+        let successContainer = document.getElementById('success-container');
+        if (!successContainer) {
+            successContainer = document.createElement('div');
+            successContainer.id = 'success-container';
+            successContainer.className = 'success-container';
+            successContainer.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #d4edda;
+                color: #155724;
+                padding: 15px;
+                border-radius: 6px;
+                border: 1px solid #c3e6cb;
+                max-width: 400px;
+                z-index: 1000;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            `;
+            document.body.appendChild(successContainer);
+        }
+
+        successContainer.textContent = message;
+        successContainer.style.display = 'block';
+
+        // Автоматически скрываем через 3 секунды
+        setTimeout(() => {
+            successContainer.style.display = 'none';
+        }, 3000);
     }
 }

@@ -29,8 +29,8 @@ def list_user_bikes():
 
 @bikes_bp.route("/sizes", methods=["POST"])
 def get_bike_sizes():
-    model = request.json.get("bike_model")
-    result = bike_service.get_bike_sizes(model)
+    bike_model_id = request.json.get("bike_model_id")
+    result = bike_service.get_bike_sizes(bike_model_id)
     return jsonify(result)
 
 @bikes_bp.route("/id", methods=["POST"])
@@ -42,8 +42,8 @@ def get_bike_size_id():
 
 @bikes_bp.route("/geometry", methods=["POST"])
 def get_bike_geometry():
-    bike_id = request.json.get("bike_id")
-    result = bike_service.get_bike_geometry(bike_id)
+    size_id = request.json.get("size_id")
+    result = bike_service.get_bike_geometry(size_id)
     return jsonify(result)
 
 @bikes_bp.route("/pending", methods=["GET"])

@@ -77,9 +77,6 @@
     min-width: 200px;
 }
 
-
-/* Адаптивность для антропометрической формы */
-
 @media (max-width: 600px) {
     .anthro-container {
         margin: 10px;
@@ -96,5 +93,9 @@
     }
     .field-input {
         flex: 1;
+    }
+    .modal-content {
+        width: 95%;
+        max-width: 350px;
     }
 }

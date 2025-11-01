@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", async() => {
             bikesContainer.innerHTML = "";
 
             if (bikes.length === 0) {
-                bikesContainer.innerHTML = "<p class='empty-message'>Нет моделей, ожидающих модерации.</p>";
+                bikesContainer.innerHTML = "<p class='empty-message'>Нет добавленных моделей велосипедов</p>";
                 return;
             }
 

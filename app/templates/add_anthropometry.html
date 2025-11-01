@@ -17,6 +17,21 @@
     <div id="error-container" class="error-container" style="display: none;"></div>
     <div id="success-container" class="success-container" style="display: none;"></div>
     
+    <!-- Модальное окно для подтверждения успешного сохранения -->
+    <div id="successModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>✅ Успешно!</h3>
+            </div>
+            <div class="modal-body">
+                <p>Данные успешно сохранены!</p>
+            </div>
+            <div class="modal-footer">
+                <button id="modalOkBtn" class="btn btn-success">OK</button>
+            </div>
+        </div>
+    </div>
+
     <form id="anthroForm" class="anthro-form">
         <div class="form-section">
             <h3>Основные параметры</h3>
@@ -79,7 +94,7 @@
                 </div>
                 <span class="field-label">Длина туловища, мм</span>
                 <div class="field-input">
-                    <input type="number" step="1" name="torsoMax" required placeholder="600">
+                    <input type="number" step="1" name="torsoMax" required placeholder="500">
                     <div class="field-error" id="torsoMax-error"></div>
                 </div>
             </div>
@@ -143,15 +158,14 @@ function showErrors(errors) {
     });
 }
 
-function showSuccess(message) {
-    const successContainer = document.getElementById('success-container');
-    successContainer.textContent = message;
-    successContainer.style.display = 'block';
-    
-    // Скрыть через 3 секунды
-    setTimeout(() => {
-        successContainer.style.display = 'none';
-    }, 3000);
+function showSuccessModal() {
+    const modal = document.getElementById('successModal');
+    modal.style.display = 'block';
+}
+
+function hideSuccessModal() {
+    const modal = document.getElementById('successModal');
+    modal.style.display = 'none';
 }
 
 document.getElementById("anthroForm").addEventListener("submit", async (e) => {
@@ -175,9 +189,9 @@ document.getElementById("anthroForm").addEventListener("submit", async (e) => {
         });
 
         const result = await response.json();
-        
+
         if (result.success) {
-            showSuccess("✅ Данные успешно сохранены!");
+            showSuccessModal();
         } else {
             if (result.errors) {
                 showErrors(result.errors);
@@ -192,6 +206,21 @@ document.getElementById("anthroForm").addEventListener("submit", async (e) => {
         const errorContainer = document.getElementById('error-container');
         errorContainer.textContent = "Ошибка сети. Попробуйте еще раз.";
         errorContainer.style.display = 'block';
+    }
+});
+
+// Обработчик нажатия кнопки OK в модальном окне
+document.getElementById('modalOkBtn').addEventListener('click', () => {
+    hideSuccessModal();
+    window.location.href = '/dashboard';
+});
+
+// Закрытие модального окна при клике вне его области
+window.addEventListener('click', (e) => {
+    const modal = document.getElementById('successModal');
+    if (e.target === modal) {
+        hideSuccessModal();
+        window.location.href = '/dashboard';
     }
 });
 
@@ -217,5 +246,3 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 </script>
-</body>
-</html>

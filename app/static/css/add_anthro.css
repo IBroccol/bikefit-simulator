@@ -1,50 +1,70 @@
-/* === Антропометрическая форма === */
+/**
+ * BikeFit - Add Anthropometry Page Styles
+ * Anthropometric measurements input form
+ */
+
+/* ============================================
+   ANTHROPOMETRY CONTAINER
+   ============================================ */
 
 .anthro-container {
-    max-width: 600px;
-    margin: 20px auto;
+    max-width: var(--container-md);
+    margin: var(--spacing-6) auto;
+    padding: var(--spacing-6);
 }
 
 .anthro-form {
     display: grid;
-    gap: 20px;
+    gap: var(--spacing-6);
 }
 
+/* ============================================
+   FORM SECTIONS
+   ============================================ */
+
 .form-section {
-    margin-bottom: 10px;
+    margin-bottom: var(--spacing-4);
 }
 
 .form-section h3 {
-    margin-bottom: 15px;
-    color: var(--primary-color);
-    font-size: 16px;
+    margin-bottom: var(--spacing-4);
+    color: var(--color-primary);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
     text-transform: uppercase;
-    letter-spacing: 1px;
-    border-bottom: 2px solid var(--primary-color);
-    padding-bottom: 5px;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--color-primary);
+    padding-bottom: var(--spacing-2);
 }
+
+/* ============================================
+   FIELD ROWS
+   ============================================ */
 
 .field-row {
     display: flex;
     align-items: center;
-    gap: 15px;
-    padding: 15px;
-    background: var(--surface);
-    border-radius: var(--radius-lg);
+    gap: var(--spacing-4);
+    padding: var(--spacing-4);
+    background: var(--bg-primary);
+    border-radius: var(--radius-xl);
     box-shadow: var(--shadow-sm);
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: all var(--transition-base);
+    border: 1px solid var(--border-color);
 }
 
 .field-row:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
+    border-color: var(--border-color-hover);
 }
 
 .field-label {
     flex: 1;
-    font-weight: 500;
+    font-weight: var(--font-weight-medium);
     color: var(--text-primary);
     min-width: 180px;
+    font-size: var(--font-size-sm);
 }
 
 .field-input {
@@ -53,49 +73,152 @@
 
 .field-input input {
     width: 100%;
-    padding: 10px 12px;
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius);
-    font-size: 14px;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    background: var(--surface);
+    padding: var(--spacing-3) var(--spacing-4);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    font-size: var(--font-size-sm);
+    transition: all var(--transition-fast);
+    background: var(--bg-primary);
+    color: var(--text-primary);
 }
 
 .field-input input:focus {
-    border-color: var(--primary-color);
+    border-color: var(--border-color-focus);
     outline: none;
-    box-shadow: 0 0 0 3px rgba(30, 107, 255, 0.2);
+    box-shadow: var(--shadow-focus);
 }
+
+.field-input input:hover {
+    border-color: var(--border-color-hover);
+}
+
+/* Error styling */
+.field-input input.error {
+    border-color: var(--color-danger);
+    background-color: var(--color-danger-light);
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.1);
+}
+
+.field-input input.error:focus {
+    border-color: var(--color-danger);
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.2);
+}
+
+.field-error {
+    display: none;
+    color: var(--color-danger);
+    font-size: var(--font-size-xs);
+    margin-top: var(--spacing-1);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.2;
+}
+
+.field-error.show {
+    display: block;
+}
+
+/* ============================================
+   FORM ACTIONS
+   ============================================ */
 
 .form-actions {
     display: flex;
     justify-content: center;
-    padding: 20px;
+    padding: var(--spacing-6) 0;
 }
 
 .form-actions .btn {
     min-width: 200px;
 }
 
-@media (max-width: 600px) {
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+/* Tablet */
+@media (max-width: 1023px) {
     .anthro-container {
-        margin: 10px;
-        max-width: none;
+        max-width: 90%;
+        padding: var(--spacing-5);
     }
+    
+    .field-row {
+        gap: var(--spacing-3);
+    }
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+    .anthro-container {
+        margin: var(--spacing-4) auto;
+        padding: var(--spacing-4);
+        max-width: 95%;
+    }
+    
+    .anthro-form {
+        gap: var(--spacing-5);
+    }
+    
+    .form-section h3 {
+        font-size: var(--font-size-base);
+    }
+    
     .field-row {
         flex-direction: column;
         align-items: stretch;
-        gap: 10px;
+        gap: var(--spacing-3);
+        padding: var(--spacing-3);
     }
+    
     .field-label {
         min-width: auto;
         text-align: center;
+        font-size: var(--font-size-sm);
     }
+    
     .field-input {
         flex: 1;
     }
+    
+    .form-actions .btn {
+        width: 100%;
+        min-width: auto;
+    }
+}
+
+/* Small Mobile */
+@media (max-width: 479px) {
+    .anthro-container {
+        margin: var(--spacing-3) auto;
+        padding: var(--spacing-3);
+    }
+    
+    .field-row {
+        padding: var(--spacing-2);
+    }
+    
     .modal-content {
         width: 95%;
         max-width: 350px;
     }
+}
+
+/* ============================================
+   MODAL OVERRIDES FOR ANTHRO PAGE
+   ============================================ */
+
+.anthro-container .modal-content {
+    max-width: 400px;
+}
+
+.anthro-container .modal-header {
+    background-color: var(--color-success);
+}
+
+.anthro-container .modal-body {
+    padding: var(--spacing-8) var(--spacing-6);
+}
+
+.anthro-container .modal-footer {
+    padding: var(--spacing-5);
 }

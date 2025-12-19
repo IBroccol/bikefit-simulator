@@ -1,14 +1,6 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory
-# from app.models.dao import (
-#     authenticate_user, create_user_account, get_user_by_username,
-#     add_user_bike, add_user_anthropometry, get_latest_user_anthropometry,
-#     save_fit_settings
-# )
-from app.services import auth_service
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, send_from_directory
 
-from app.utils.geometry_calc import basic_fit
 from app.utils.decorators import auth_required, role_required
-from app.routes.auth import logout as auth_logout
 
 pages_bp = Blueprint("pages", __name__)
 
@@ -18,34 +10,23 @@ def serve_js(filename):
 
 # -------------------- Login / Register --------------------
 
-@pages_bp.route("/", methods=["GET", "POST"])
+@pages_bp.route("/", methods=["GET"])
 def login_page():
     if "user_id" in session:
         return redirect(url_for("pages.dashboard"))
     return render_template("login.html")
 
 
-@pages_bp.route("/register", methods=["GET", "POST"])
+@pages_bp.route("/register", methods=["GET"])
 def register_page():
-    if request.method == "POST":
-        username = request.form.get("username")
-        password = request.form.get("password")
-
-        if auth_service.create_user_account(username, password):
-            flash("Регистрация прошла успешно! Теперь войдите", "success")
-            return redirect(url_for("pages.login_page"))
-        else:
-            flash("Пользователь с таким логином уже существует", "danger")
-
     return render_template("register.html")
 
 
 @pages_bp.route("/logout")
 def logout_page():
-    res = auth_logout()
-    print(res)
-    if res[1] == 200:
-        flash("Вы вышли из системы", "info")
+    session.pop("user_id", None)
+    session.pop("user_role", None)
+    flash("Вы вышли из системы", "info")
     return redirect(url_for("pages.login_page"))
 
 
@@ -88,7 +69,6 @@ def compare_page():
 @pages_bp.route("/view")
 @auth_required
 def view_page():
-    print(session)
     return render_template("view.html")
 
 # -------------------- Moderation --------------------
@@ -96,7 +76,6 @@ def view_page():
 @pages_bp.route("/moderation")
 @role_required("moderator")
 def moderation_page():
-    print(session)
     return render_template("moderation.html")
 
 # -------------------- Utility --------------------

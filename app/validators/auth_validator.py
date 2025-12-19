@@ -25,6 +25,7 @@ def validate_register_data(data: Dict[str, Any]) -> ValidationResult:
     
     username = data.get("username", "").strip()
     password = data.get("password", "")
+    confirm_password = data.get("confirm_password", "")
     
     # Валидация имени пользователя
     if not username:
@@ -59,6 +60,12 @@ def validate_register_data(data: Dict[str, Any]) -> ValidationResult:
         result.add_error("password", "Пароль не может содержать три одинаковых символа подряд")
     elif username.lower() in password.lower():
         result.add_error("password", "Пароль не может содержать имя пользователя")
+    
+    # Валидация подтверждения пароля
+    if not confirm_password:
+        result.add_error("confirm_password", "Подтверждение пароля обязательно")
+    elif password != confirm_password:
+        result.add_error("confirm_password", "Пароли не совпадают")
     
     if result.is_valid:
         result.data = {"username": username, "password": password}

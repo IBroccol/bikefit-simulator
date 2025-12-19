@@ -39,7 +39,6 @@ export function h_line(scope, anchor_point, visible = true, dash = false) {
         dependencies: [anchor_point],
         visible: false
     });
-    window.p2 = p2;
 
     let line = new Line({
         scope: scope,

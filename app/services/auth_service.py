@@ -1,8 +1,8 @@
 from app.models import dao
 from app.validators.auth_validator import validate_register_data, validate_login_data
 
-def create_user_account(username, password):
-    validation_data = {"username": username, "password": password}
+def create_user_account(username, password, confirm_password=None):
+    validation_data = {"username": username, "password": password, "confirm_password": confirm_password}
     validation_result = validate_register_data(validation_data)
     
     if not validation_result.is_valid:

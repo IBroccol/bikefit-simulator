@@ -3,7 +3,6 @@ import { distance } from './geometry-helpers.js'
 
 export class Interface {
     constructor(element_ids) {
-        console.log(element_ids)
         this.cur_bike_model_id = null;
         this.cur_fit_name = null;
 
@@ -20,8 +19,7 @@ export class Interface {
         this.saveButton = document.getElementById(element_ids.saveButton);
 
         this.resetButton = document.getElementById(element_ids.resetButton);
-
-        console.log(this)
+        this.deleteButton = document.getElementById(element_ids.deleteButton);
 
         this.setupEventListeners()
         this.getAnthro()
@@ -31,21 +29,22 @@ export class Interface {
     setupEventListeners() {
         this.saveButton.addEventListener("click", () => this.saveFit());
         this.resetButton.addEventListener("click", () => this.drawer.reset());
+        this.deleteButton.addEventListener("click", () => this.deleteFit());
 
         this.bikeSearch.addEventListener("focus", async() => {
             // const savedBikes = await this.fetchBikes();
-            console.log(this.savedBikes)
             this.renderAutocompleteList(this.bikeList, this.savedBikes, this.bikeSearch, this.onBikeChoise.bind(this));
         });
         this.setupAutocompleteHide(this.bikeList, this.bikeSearch);
 
         this.sizeSelect.addEventListener("change", () => {
             const size = this.sizeSelect.value;
-            if (size !== "Select size") {
+            if (size !== "Выберите размер") {
                 this.onSizeChoise(size);
             } else {
                 this.drawer.clearCanvas()
                 this.fitSearch.value = ""
+                this.deleteButton.style.display = "none";
             }
         });
 
@@ -90,7 +89,7 @@ export class Interface {
     }
 
     renderSizeOptions(sizes) {
-        this.sizeSelect.innerHTML = '<option>Select size</option>';
+        this.sizeSelect.innerHTML = '<option>Выберите размер</option>';
         sizes.forEach(size => {
             const opt = document.createElement("option");
             opt.value = size;
@@ -113,7 +112,6 @@ export class Interface {
         this.drawer.INIT_GEOMETRY = bike_geo
 
         this.drawer.INIT_FIT = await this.getBasicFitData(this.cur_size_id)
-        console.log(this.drawer)
         this.drawer.draw()
     }
 
@@ -144,7 +142,6 @@ export class Interface {
 
     async fetchFits() {
         if (this.cur_bike_model_id === null) {
-            console.error("Ошибка: не выбран велосипед");
             return [];
         }
         try {
@@ -205,7 +202,7 @@ export class Interface {
         const name = this.fitInput.value.trim();
 
         if (!name) {
-            this.showError("Введите название посадки перед сохранением!");
+            this.showError("Введите название настройки перед сохранением!");
             document.getElementById("fitInput").focus();
             return;
         }
@@ -226,7 +223,7 @@ export class Interface {
             const result = await response.json();
 
             if (result.success) {
-                this.showSuccess("Настройки успешно сохранены!");
+                this.showSuccess("Посадка успешно сохранена!");
                 this.fitInput.value = "";
             } else {
                 if (result.errors) {
@@ -339,8 +336,54 @@ export class Interface {
         const fit_data = await this.getFitData(fit_name, this.cur_size_id)
         this.drawer.INIT_FIT = fit_data
         this.cur_fit_name = fit_name
-            //console.log(fit_data)
+        this.deleteButton.style.display = "block";
         this.drawer.draw()
+    }
+
+    async deleteFit() {
+        if (!this.cur_fit_name) {
+            this.showError("Не выбрана посадка для удаления");
+            return;
+        }
+
+        if (!confirm(`Вы уверены, что хотите удалить посадку "${this.cur_fit_name}"?`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch("/fits/delete", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({
+                    fit_name: this.cur_fit_name,
+                    size_id: this.cur_size_id
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                this.showSuccess("Посадка успешно удалена!");
+                this.fitSearch.value = "";
+                this.cur_fit_name = null;
+                this.deleteButton.style.display = "none";
+                
+                // Reset to basic fit
+                this.drawer.INIT_FIT = await this.getBasicFitData(this.cur_size_id);
+                this.drawer.draw();
+            } else {
+                if (result.errors) {
+                    const errorMsg = result.errors.map(e => e.message).join(", ");
+                    this.showError("Ошибка валидации: " + errorMsg);
+                } else {
+                    this.showError(result.error || "Ошибка при удалении!");
+                }
+            }
+        } catch (error) {
+            console.error("Ошибка:", error);
+            this.showError("Ошибка сети при удалении: " + error.message);
+        }
     }
 
     async getAnthro() {
@@ -363,28 +406,29 @@ export class Interface {
             // Проверяем, не вернул ли запрос пустой ответ
             if (!result.data || Object.keys(result.data).length === 0) {
                 // Показываем всплывающее окно с просьбой ввести антропометрию
-                this.showError("Пожалуйста, введите ваши антропометрические данные перед тем, как строить посадку. Вы будете перенаправлены на страницу настроек.");
+                this.showError("Пожалуйста, введите ваши параметры перед настройкой посадки. Вы будете перенаправлены на страницу через 3 секунды.");
 
-                // Перенаправляем на страницу настроек антропометрии
-                window.location.href = '/add_anthropometry';
+                // Перенаправляем на страницу настроек антропометрии через 3 секунды
+                setTimeout(() => {
+                    window.location.href = '/add_anthropometry';
+                }, 3000);
                 return;
             }
 
             this.drawer.INIT_ANTROPOMETRICS = result.data;
-            //console.log(this.drawer.INIT_ANTROPOMETRICS)
         } catch (error) {
-            console.error('Ошибка:', error);
             // В случае ошибки сети или сервера также перенаправляем на страницу настроек
-            this.showError("Произошла ошибка при загрузке антропометрических данных. Вы будете перенаправлены на страницу настроек.");
-            window.location.href = '/add_anthropometry';
+            this.showError("Произошла ошибка при загрузке ваших параметров. Вы будете перенаправлены на страницу через 3 секунды.");
+            setTimeout(() => {
+                window.location.href = '/add_anthropometry';
+            }, 3000);
         }
     }
 
     getFitSettings() {
-        //console.log(this)
         var fitSettings = {
             size_id: this.cur_size_id,
-            seatHight: distance(this.drawer.bike.BottomBracket, this.drawer.bike.SeatpostTop) / this.drawer.scale + this.drawer.INIT_GEOMETRY['saddleHeight'],
+            seatHight: distance(this.drawer.bike.BottomBracket, this.drawer.bike.SeatpostTop) / this.drawer.scale + parseFloat(this.drawer.INIT_GEOMETRY['saddleHeight']),
             stemHight: distance(this.drawer.bike.TopTube.p1, this.drawer.bike.Stem.p1) / this.drawer.scale,
             saddleOffset: (this.drawer.bike.Saddle.x - this.drawer.bike.SeatpostTop.x) / this.drawer.scale,
             torsoAngle: this.drawer.angles.TorsoAngle.value,

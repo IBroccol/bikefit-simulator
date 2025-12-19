@@ -55,7 +55,6 @@ document.addEventListener("DOMContentLoaded", async() => {
                 bikesContainer.appendChild(item);
             });
         } catch (err) {
-            console.error(err);
             bikesContainer.innerHTML = `<p style="color:red;">Ошибка при получении данных</p>`;
         }
     }
@@ -76,7 +75,6 @@ document.addEventListener("DOMContentLoaded", async() => {
                 alert("Ошибка при обновлении статуса");
             }
         } catch (err) {
-            console.error(err);
             alert("Ошибка при отправке запроса");
         }
     }
@@ -116,7 +114,7 @@ document.addEventListener("DOMContentLoaded", async() => {
                 sizeButtonsContainer.appendChild(btn);
             });
         } catch (err) {
-            console.error(err);
+            // Silently handle error
         }
     }
 

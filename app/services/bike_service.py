@@ -1,8 +1,22 @@
 from app.models import dao
+from app.validators.bike_validator import validate_bike_data
+from app.utils.error_handler import ValidationError
 
-def add_user_bike(user_id, bike):
-    result = dao.add_user_bike(user_id, bike)
-    return result
+def add_user_bike(user_id, bikes):
+    # Валидация данных велосипеда
+    validation_result = validate_bike_data(bikes)
+    
+    if not validation_result.is_valid:
+        raise ValidationError(validation_result.errors)
+    
+    # Добавляем каждый размер велосипеда
+    results = []
+    for bike in validation_result.data:
+        result = dao.add_user_bike(user_id, bike)
+        results.append(result)
+    
+    # Возвращаем результат последней операции (все успешны или будет исключение)
+    return results[-1] if results else {"success": False, "error": "Нет данных для сохранения"}
 
 def get_user_bike_models(user_id):
     result = dao.get_user_bike_models(user_id)

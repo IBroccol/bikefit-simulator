@@ -33,7 +33,6 @@ export class InterfacePreview {
             const result = await response.json();
             return result.success ? result.data : [];
         } catch (error) {
-            console.error("Ошибка при загрузке размеров:", error);
             return [];
         }
     }
@@ -94,7 +93,7 @@ export class InterfacePreview {
             this.drawer.INIT_GEOMETRY = bike_geo;
             this.drawer.draw_preview();
         } catch (err) {
-            console.error("Ошибка при получении геометрии:", err);
+            // Silently handle error
         }
     }
 
@@ -109,7 +108,6 @@ export class InterfacePreview {
             const result = await response.json();
             return result.success ? result.data : null;
         } catch (error) {
-            console.error("Ошибка при запросе /bikes/geometry:", error);
             throw error;
         }
     }
@@ -126,7 +124,6 @@ export class InterfacePreview {
             const result = await response.json();
             return result.success ? result.data : null;
         } catch (error) {
-            console.error("Ошибка:", error);
             return null;
         }
     }

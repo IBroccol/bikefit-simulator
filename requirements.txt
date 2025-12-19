@@ -1,4 +1,5 @@
 Flask
 python-dotenv
 psycopg[binary]
-dotenv
+psycopg-pool
+Werkzeug

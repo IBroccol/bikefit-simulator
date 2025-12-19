@@ -1,6 +1,5 @@
 from app.models import dao
 from app.utils.geometry_calc import basic_fit
-from app.services.bike_service import get_bike_geometry
 from app.validators.fit_validator import validate_anthropometry_data, validate_fit_settings_data, validate_fit_request_data
 
 def add_user_anthropometry(user_id, data):
@@ -76,7 +75,19 @@ def get_basic_fit(size_id, user_id):
     if not validation_result.is_valid:
         return {"success": False, "errors": validation_result.errors}
     
-    bike_geo = get_bike_geometry(validation_result.data["size_id"])["data"]
-    print(bike_geo)
+    # Get bike geometry directly from DAO instead of through bike_service
+    bike_geo = dao.get_bike_geometry(validation_result.data["size_id"])
+    if not bike_geo:
+        return {"success": False, "errors": [{"field": "size_id", "message": "Геометрия велосипеда не найдена"}]}
+    
     anthro = get_latest_user_anthropometry(user_id)
     return basic_fit(bike_geo, anthro)
+
+def delete_fit(user_id, fit_name, size_id):
+    validation_data = {"fit_name": fit_name, "size_id": size_id}
+    validation_result = validate_fit_request_data(validation_data)
+    
+    if not validation_result.is_valid:
+        return {"success": False, "errors": validation_result.errors}
+    
+    return dao.delete_fit(user_id, validation_result.data["fit_name"], validation_result.data["size_id"])

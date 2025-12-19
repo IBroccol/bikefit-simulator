@@ -2,32 +2,42 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Личный кабинет</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный кабинет - BikeFit</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
-    <div class="card">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, msg in messages %}
-                    <div class="flash {{ category }}">{{ msg }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+    <div class="auth-page">
+        <div class="card fade-in" style="max-width: 500px;">
+            <h2 class="text-center">Личный кабинет</h2>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, msg in messages %}
+                        <div class="flash {{ category }}">{{ msg }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
 
-        <div class="buttons">
-            <a class="btn btn-primary btn-block" href="/add_bike">Добавить велосипед</a>
-            <a class="btn btn-primary btn-block mt-10" href="/view">Мои велосипеды</a>
-            <a class="btn btn-primary btn-block mt-10" href="/add_anthropometry">Ввести антропометрию</a>
-            <a class="btn btn-primary btn-block mt-10" href="/canvas">Построить посадку</a>
-            <a class="btn btn-primary btn-block mt-10" href="/compare">Сравнить посадки</a>
+            <div style="display: flex; flex-direction: column; gap: var(--spacing-3); margin-top: var(--spacing-4);">
+                <a class="btn btn-primary btn-block" href="/add_bike">Добавить велосипед</a>
+                <a class="btn btn-primary btn-block" href="/view">Мои велосипеды</a>
+                <a class="btn btn-primary btn-block" href="/add_anthropometry">Мои параметры</a>
+                <a class="btn btn-primary btn-block" href="/canvas">Настройка посадки</a>
+                <a class="btn btn-primary btn-block" href="/compare">Сравнение посадок</a>
 
-            {% if session.get('user_role') == 'moderator' %}
-                <a class="btn btn-info btn-block mt-10" href="/moderation">Модерация</a>
-            {% endif %}
+                {% if session.get('user_role') == 'moderator' %}
+                    <a class="btn btn-primary btn-block" href="/moderation">Модерация</a>
+                {% endif %}
+            </div>
+
+            <div style="margin-top: var(--spacing-5); padding-top: var(--spacing-5); border-top: 1px solid var(--border-color);">
+                <a class="btn btn-danger btn-block" href="/logout">Выйти</a>
+            </div>
         </div>
-
-        <a class="btn btn-danger text-center" href="/logout">Выйти</a>
     </div>
+
+    <script type="module" src="{{ url_for('static', filename='js/theme-toggle.js') }}"></script>
 </body>
 </html>

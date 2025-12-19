@@ -2,19 +2,14 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Построитель посадки</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Настройка посадки - BikeFit</title>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.15/paper-full.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <style>
-        /* Дополнительные стили специально для canvas страницы */
-        html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-        }
-        
         .canvas-page {
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
@@ -22,30 +17,34 @@
         .canvas-layout {
             flex: 1;
             display: flex;
-            gap: 20px;
+            gap: var(--spacing-4);
+            min-height: 0;
+            overflow: hidden;
         }
         
         .canvas-container {
             flex: 1;
             display: flex;
             flex-direction: column;
-            padding: 20px;
-            background: var(--background);
+            padding: var(--spacing-6);
+            background: var(--bg-secondary);
+            min-width: 0;
         }
         
         .canvas-wrapper {
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: var(--spacing-4);
+            min-height: 0;
         }
         
         #myCanvas {
             flex: 1;
             width: 100%;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            background: var(--surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            background: var(--bg-canvas);
             box-shadow: var(--shadow-sm);
             min-height: 400px;
         }
@@ -53,26 +52,91 @@
         .canvas-controls {
             display: flex;
             justify-content: center;
-            padding: 10px 0;
+            gap: var(--spacing-2);
+            padding: var(--spacing-2) 0;
+            flex-shrink: 0;
+        }
+        
+        /* Responsive breakpoints */
+        @media (max-width: 1200px) {
+            .canvas-layout {
+                flex-direction: column;
+                overflow-y: auto;
+                overflow-x: hidden;
+            }
+            
+            .sidebar {
+                width: 100%;
+                max-width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                min-height: auto;
+                max-height: none;
+            }
+            
+            .canvas-container {
+                padding: var(--spacing-4);
+                flex: 0 0 auto;
+            }
+            
+            .canvas-wrapper {
+                flex: 0 0 auto;
+            }
+            
+            #myCanvas {
+                flex: none;
+                min-height: 350px;
+                height: 450px;
+                max-height: 550px;
+            }
+        }
+        
+        @media (max-width: 767px) {
+            .canvas-container {
+                padding: var(--spacing-3);
+            }
+            
+            #myCanvas {
+                min-height: 300px;
+                height: 350px;
+                max-height: 400px;
+            }
+            
+            .sidebar {
+                padding: var(--spacing-4);
+            }
+        }
+        
+        @media (max-width: 479px) {
+            #myCanvas {
+                min-height: 250px;
+                height: 300px;
+                max-height: 350px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="canvas-page">
-        <div class="top-bar">
-            <button class="btn btn-primary" onclick="window.location.href='/dashboard'">В меню</button>
-        </div>
+        <header>
+            <h1>Настройка посадки</h1>
+            <button class="btn btn-primary" onclick="window.location.href='/dashboard'">← В меню</button>
+        </header>
 
         <div class="canvas-layout">
             <!-- Левая панель -->
             <aside class="sidebar">
                 <div class="block">
-                    <h3>Bicycle</h3>
+                    <h3>Велосипед</h3>
                     <div class="input-group">
-                        <input type="text" placeholder="Search" id="bikeSearch" readonly>
+                        <label for="bikeSearch">Поиск велосипеда</label>
+                        <input type="text" placeholder="Выберите велосипед" id="bikeSearch" readonly>
                         <div id="bikeList" class="autocomplete-list"></div>
+                    </div>
+                    <div class="input-group">
+                        <label for="sizeSelect">Размер</label>
                         <select id="sizeSelect">
-                            <option>Select size</option>
+                            <option>Выберите размер</option>
                         </select>
                     </div>
                 </div>
@@ -81,9 +145,16 @@
             <!-- Центральная часть с канвасом -->
             <main class="canvas-container">
                 <div class="canvas-wrapper">
+                    <div class="fit-hints" style="background: var(--bg-primary); padding: var(--spacing-3); border-radius: var(--radius-lg); margin-bottom: var(--spacing-3); border: 1px solid var(--border-color);">
+                        <h4 style="margin: 0 0 var(--spacing-2) 0; color: var(--text-primary); font-size: 0.9rem;">💡 Рекомендации по посадке:</h4>
+                        <ul style="margin: 0; padding-left: var(--spacing-4); color: var(--text-secondary); font-size: 0.85rem; line-height: 1.6;">
+                            <li>При положении педали на <strong>3 часа</strong> (горизонтально вперёд) колено должно находиться <strong>над осью педали</strong></li>
+                            <li>При положении педали на <strong>6 часов</strong> (внизу) угол в колене должен быть примерно <strong>145°</strong></li>
+                        </ul>
+                    </div>
                     <canvas id="myCanvas"></canvas>
                     <div class="canvas-controls">
-                        <button class="btn btn-primary" id="resetBtn">Reset</button>
+                        <button class="btn btn-primary" id="resetBtn">Сбросить</button>
                     </div>
                 </div>
             </main>
@@ -91,18 +162,21 @@
             <!-- Правая панель -->
             <aside class="sidebar">
                 <div class="block">
-                    <h3>Saved Fittings</h3>
+                    <h3>Мои посадки</h3>
                     <div class="input-group">
-                        <input type="text" placeholder="Search" id="fitSearch" readonly>
+                        <label for="fitSearch">Выбрать посадку</label>
+                        <input type="text" placeholder="Выберите посадку" id="fitSearch" readonly>
                         <div id="fitList" class="autocomplete-list"></div>
                     </div>
+                    <button class="btn btn-danger btn-block" id="deleteBtn" style="display: none;">Удалить посадку</button>
                 </div>
 
                 <div class="block">
-                    <h3>Save Current Fitting</h3>
+                    <h3>Сохранить настройки</h3>
                     <div class="input-group">
-                        <input type="text" id="fitInput" placeholder="Fitting name">
-                        <button class="btn btn-success" id="saveBtn">Save</button>
+                        <label for="fitInput">Название посадки</label>
+                        <input type="text" id="fitInput" placeholder="Введите название">
+                        <button class="btn btn-success btn-block" id="saveBtn">Сохранить</button>
                     </div>
                 </div>
             </aside>
@@ -119,9 +193,11 @@
             "fitList": "fitList",
             "fitInput": "fitInput",
             "saveButton": "saveBtn",
-            "resetButton": "resetBtn"
+            "resetButton": "resetBtn",
+            "deleteButton": "deleteBtn"
         }
     </script>
+    <script type="module" src="{{ url_for('static', filename='js/theme-toggle.js') }}"></script>
     <script type="module" src="{{ url_for('static', filename='js/canvas.js') }}"></script>
 </body>
 </html>

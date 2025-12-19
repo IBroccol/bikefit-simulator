@@ -2,78 +2,112 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Сравнение велосипедов</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сравнение посадок - BikeFit</title>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.15/paper-full.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/compare.css') }}">
 </head>
 <body>
-    <div class="top-bar">
-        <button class="btn btn-primary" onclick="window.location.href='/dashboard'">В меню</button>
-    </div>
+    <header>
+        <h1>Сравнение посадок</h1>
+        <button class="btn btn-primary" onclick="window.location.href='/dashboard'">← В меню</button>
+    </header>
 
-    <div class="compare-section">
-        <!-- Левая панель велосипеда -->
-        <div class="bike-panel">
-            <h3>Велосипед 1</h3>
-            <canvas id="canvasLeft" class="bike-canvas" resize></canvas>
-
-            <div class="controls">
-                <!-- Поиск велосипеда и выбор размера -->
-                <div class="input-group">
-                    <label>Поиск велосипеда</label>
-                    <input type="text" placeholder="Search" id="bikeSearchLeft" readonly>
-                    <div id="bikeListLeft" class="autocomplete-list"></div>
-                    <select id="sizeSelectLeft">
-                        <option>Select size</option>
-                    </select>
-                </div>
-
-                <!-- Поиск/сохранение fitting -->
-                <div class="input-group">
-                    <label>Saved Fittings</label>
-                    <input type="text" placeholder="Search" id="fitSearchLeft" readonly>
-                    <div id="fitListLeft" class="autocomplete-list"></div>
-
-                    <div class="input-row">
-                        <input type="text" id="fitInputLeft" placeholder="Fitting name">
-                        <button class="btn btn-success" id="saveBtnLeft">Save</button>
-                    </div>
-                </div>
-
-                <button class="btn btn-primary" id="resetBtnLeft">Reset</button>
-            </div>
+    <div class="page-wrapper">
+        <div class="fit-hints" style="background: var(--bg-primary); padding: var(--spacing-3); border-radius: var(--radius-lg); margin: var(--spacing-4); border: 1px solid var(--border-color);">
+            <h4 style="margin: 0 0 var(--spacing-2) 0; color: var(--text-primary); font-size: 0.9rem;">💡 Рекомендации по посадке:</h4>
+            <ul style="margin: 0; padding-left: var(--spacing-4); color: var(--text-secondary); font-size: 0.85rem; line-height: 1.6;">
+                <li>При положении педали на <strong>3 часа</strong> (горизонтально вперёд) колено должно находиться <strong>над осью педали</strong></li>
+                <li>При положении педали на <strong>6 часов</strong> (внизу) угол в колене должен быть примерно <strong>145°</strong></li>
+            </ul>
         </div>
+        <div class="compare-section">
+            <!-- Левая панель велосипеда -->
+            <div class="bike-panel">
+                <h3>Велосипед 1</h3>
+                <canvas id="canvasLeft" class="bike-canvas" resize></canvas>
 
-        <!-- Правая панель велосипеда -->
-        <div class="bike-panel">
-            <h3>Велосипед 2</h3>
-            <canvas id="canvasRight" class="bike-canvas" resize></canvas>
-
-            <div class="controls">
-                <!-- Поиск велосипеда и выбор размера -->
-                <div class="input-group">
-                    <label>Поиск велосипеда</label>
-                    <input type="text" placeholder="Search" id="bikeSearchRight" readonly>
-                    <div id="bikeListRight" class="autocomplete-list"></div>
-                    <select id="sizeSelectRight">
-                        <option>Select size</option>
-                    </select>
-                </div>
-
-                <!-- Поиск/сохранение fitting -->
-                <div class="input-group">
-                    <label>Saved Fittings</label>
-                    <input type="text" placeholder="Search" id="fitSearchRight" readonly>
-                    <div id="fitListRight" class="autocomplete-list"></div>
-
-                    <div class="input-row">
-                        <input type="text" id="fitInputRight" placeholder="Fitting name">
-                        <button class="btn btn-success" id="saveBtnRight">Save</button>
+                <div class="controls">
+                    <!-- Поиск велосипеда -->
+                    <div class="input-group">
+                        <label for="bikeSearchLeft">Велосипед</label>
+                        <input type="text" placeholder="Выберите модель" id="bikeSearchLeft" readonly>
+                        <div id="bikeListLeft" class="autocomplete-list"></div>
                     </div>
-                </div>
+                    
+                    <!-- Выбор размера -->
+                    <div class="input-group">
+                        <label for="sizeSelectLeft">Размер</label>
+                        <select id="sizeSelectLeft">
+                            <option>Выберите размер</option>
+                        </select>
+                    </div>
 
-                <button class="btn btn-primary" id="resetBtnRight">Reset</button>
+                    <!-- Поиск посадки -->
+                    <div class="input-group">
+                        <label for="fitSearchLeft">Посадка</label>
+                        <input type="text" placeholder="Выберите настройку" id="fitSearchLeft" readonly>
+                        <div id="fitListLeft" class="autocomplete-list"></div>
+                    </div>
+                    
+                    <button class="btn btn-danger btn-block" id="deleteBtnLeft" style="display: none;">Удалить посадку</button>
+                    
+                    <!-- Сохранение посадки -->
+                    <div class="input-group">
+                        <label for="fitInputLeft">Сохранить посадку</label>
+                        <div class="input-row">
+                            <input type="text" id="fitInputLeft" placeholder="Название посадки">
+                            <button class="btn btn-success" id="saveBtnLeft">Сохранить</button>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary btn-block" id="resetBtnLeft">Сбросить</button>
+                </div>
+            </div>
+
+            <!-- Правая панель велосипеда -->
+            <div class="bike-panel">
+                <h3>Велосипед 2</h3>
+                <canvas id="canvasRight" class="bike-canvas" resize></canvas>
+
+                <div class="controls">
+                    <!-- Поиск велосипеда -->
+                    <div class="input-group">
+                        <label for="bikeSearchRight">Велосипед</label>
+                        <input type="text" placeholder="Выберите модель" id="bikeSearchRight" readonly>
+                        <div id="bikeListRight" class="autocomplete-list"></div>
+                    </div>
+                    
+                    <!-- Выбор размера -->
+                    <div class="input-group">
+                        <label for="sizeSelectRight">Размер</label>
+                        <select id="sizeSelectRight">
+                            <option>Выберите размер</option>
+                        </select>
+                    </div>
+
+                    <!-- Поиск посадки -->
+                    <div class="input-group">
+                        <label for="fitSearchRight">Посадка</label>
+                        <input type="text" placeholder="Выберите настройку" id="fitSearchRight" readonly>
+                        <div id="fitListRight" class="autocomplete-list"></div>
+                    </div>
+                    
+                    <button class="btn btn-danger btn-block" id="deleteBtnRight" style="display: none;">Удалить посадку</button>
+                    
+                    <!-- Сохранение посадки -->
+                    <div class="input-group">
+                        <label for="fitInputRight">Сохранить посадку</label>
+                        <div class="input-row">
+                            <input type="text" id="fitInputRight" placeholder="Название посадки">
+                            <button class="btn btn-success" id="saveBtnRight">Сохранить</button>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary btn-block" id="resetBtnRight">Сбросить</button>
+                </div>
             </div>
         </div>
     </div>
@@ -88,7 +122,8 @@
             "fitList": "fitListLeft",
             "fitInput": "fitInputLeft",
             "saveButton": "saveBtnLeft",
-            "resetButton": "resetBtnLeft"
+            "resetButton": "resetBtnLeft",
+            "deleteButton": "deleteBtnLeft"
         }
 
         window.element_ids_right = {
@@ -100,10 +135,12 @@
             "fitList": "fitListRight",
             "fitInput": "fitInputRight",
             "saveButton": "saveBtnRight",
-            "resetButton": "resetBtnRight"
+            "resetButton": "resetBtnRight",
+            "deleteButton": "deleteBtnRight"
         }
     </script>
 
+    <script type="module" src="{{ url_for('static', filename='js/theme-toggle.js') }}"></script>
     <script type="module" src="{{ url_for('static', filename='js/canvas_compare.js') }}"></script>
 </body>
 </html>

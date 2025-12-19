@@ -250,7 +250,8 @@ export class Drawer {
 
         this.bike.SteererRange = new Segment({ scope: this.scope, p1: point1, p2: point0, visible: false })
         point0 = new Point({ scope: this.scope, x: this.bike.TopTube.p1.x - this.FIT['stemHight'] * Math.cos(this.GEOMETRY['headAngle'] / 180 * Math.PI), y: this.bike.TopTube.p1.y - this.FIT['stemHight'] * Math.sin(this.GEOMETRY['headAngle'] / 180 * Math.PI), dependencies: [this.bike.SteererRange], moveable: true })
-        this.bike.StemLine = angled_line(this.scope, this.bike.TopTube.p1, point0, -(90 + this.GEOMETRY['stemAngle']), false)
+        this.bike.StemLine = angled_line(this.scope, this.bike.TopTube.p1, point0, 90 - this.GEOMETRY['stemAngle'], false)
+        console.log(90 - this.GEOMETRY['stemAngle'])
         circle0 = new Circle({ scope: this.scope, center: point0, radius: this.GEOMETRY['stemLen'], visible: false })
         point1 = new Point({ scope: this.scope, x: inf, y: 0, dependencies: [this.bike.StemLine, circle0], visible: false })
         this.bike.Stem = new Segment({ scope: this.scope, p1: point0, p2: point1 })
@@ -428,11 +429,6 @@ export class Drawer {
 
         this.rider.Upperarm = new Segment({ scope: this.scope, p1: this.rider.Shoulder, p2: this.rider.Elbow })
         this.rider.Forearm = new Segment({ scope: this.scope, p1: this.rider.Elbow, p2: this.rider.Hands })
-
-        // if (this.rider.Elbow.y == 0) {
-        //     this.rider.Elbow.hide(true)
-        //     console.log(this.rider.Elbow)
-        // }
     }
 
     drawHead() {

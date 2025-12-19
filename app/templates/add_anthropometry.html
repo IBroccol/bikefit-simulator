@@ -2,37 +2,27 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Добавить антропометрию</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои параметры - BikeFit</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/add_anthro.css') }}">
 </head>
 <body>
-<div class="container anthro-container">
-    <div class="top-bar">
-        <button class="btn btn-primary" onclick="window.location.href='/dashboard'">В меню</button>
-    </div>
+    <header>
+        <h1>Мои параметры</h1>
+        <button class="btn btn-primary" onclick="window.location.href='/dashboard'">← В меню</button>
+    </header>
 
-    <h2>Антропометрические данные</h2>
+    <div class="page-wrapper">
+        <div class="container anthro-container">
+            <h2 class="text-center">Ваши измерения</h2>
     
-    <div id="error-container" class="error-container" style="display: none;"></div>
-    <div id="success-container" class="success-container" style="display: none;"></div>
-    
-    <!-- Модальное окно для подтверждения успешного сохранения -->
-    <div id="successModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>✅ Успешно!</h3>
-            </div>
-            <div class="modal-body">
-                <p>Данные успешно сохранены!</p>
-            </div>
-            <div class="modal-footer">
-                <button id="modalOkBtn" class="btn btn-success">OK</button>
-            </div>
-        </div>
-    </div>
+            <div id="error-container" class="error-container" style="display: none;"></div>
+            <div id="success-container" class="success-container" style="display: none;"></div>
+            
 
-    <form id="anthroForm" class="anthro-form">
+            <form id="anthroForm" class="anthro-form">
         <div class="form-section">
             <h3>Основные параметры</h3>
             
@@ -42,7 +32,7 @@
                 </div>
                 <span class="field-label">Рост, см</span>
                 <div class="field-input">
-                    <input type="number" step="1" name="height" required placeholder="170">
+                    <input type="number" step="1" name="height" placeholder="170">
                     <div class="field-error" id="height-error"></div>
                 </div>
             </div>
@@ -57,7 +47,7 @@
                 </div>
                 <span class="field-label">Длина бедра, мм</span>
                 <div class="field-input">
-                    <input type="number" step="1" name="hip" required placeholder="450">
+                    <input type="number" step="1" name="hip" placeholder="450">
                     <div class="field-error" id="hip-error"></div>
                 </div>
             </div>
@@ -68,7 +58,7 @@
                 </div>
                 <span class="field-label">Длина голени, мм</span>
                 <div class="field-input">
-                    <input type="number" step="1" name="lowerLeg" required placeholder="400">
+                    <input type="number" step="1" name="lowerLeg" placeholder="400">
                     <div class="field-error" id="lowerLeg-error"></div>
                 </div>
             </div>
@@ -79,7 +69,7 @@
                 </div>
                 <span class="field-label">Длина стопы, мм</span>
                 <div class="field-input">
-                    <input type="number" step="1" name="footLength" required placeholder="260">
+                    <input type="number" step="1" name="footLength" placeholder="260">
                     <div class="field-error" id="footLength-error"></div>
                 </div>
             </div>
@@ -94,7 +84,7 @@
                 </div>
                 <span class="field-label">Длина туловища, мм</span>
                 <div class="field-input">
-                    <input type="number" step="1" name="torsoMax" required placeholder="500">
+                    <input type="number" step="1" name="torsoMax" placeholder="500">
                     <div class="field-error" id="torsoMax-error"></div>
                 </div>
             </div>
@@ -105,7 +95,7 @@
                 </div>
                 <span class="field-label">Длина плеча, мм</span>
                 <div class="field-input">
-                    <input type="number" step="1" name="upperarm" required placeholder="320">
+                    <input type="number" step="1" name="upperarm" placeholder="320">
                     <div class="field-error" id="upperarm-error"></div>
                 </div>
             </div>
@@ -116,115 +106,73 @@
                 </div>
                 <span class="field-label">Длина предплечья, мм</span>
                 <div class="field-input">
-                    <input type="number" step="1" name="forearm" required placeholder="280">
+                    <input type="number" step="1" name="forearm" placeholder="280">
                     <div class="field-error" id="forearm-error"></div>
                 </div>
             </div>
         </div>
 
-        <div class="form-actions">
-            <button type="submit" class="btn btn-success btn-lg">Сохранить данные</button>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-success btn-lg">Сохранить данные</button>
+                </div>
+            </form>
         </div>
-    </form>
-</div>
+    </div>
 
-<script>
-function clearErrors() {
-    const errorContainer = document.getElementById('error-container');
-    const successContainer = document.getElementById('success-container');
+<script src="{{ url_for('static', filename='js/tooltip-position.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/theme-toggle.js') }}"></script>
+<script type="module">
+import { errorHandler } from '/static/js/error_handler.js';
+
+// Функции для работы с ошибками полей
+function showFieldError(fieldName, message) {
+    const input = document.querySelector(`input[name="${fieldName}"]`);
+    const errorDiv = document.getElementById(`${fieldName}-error`);
     
-    errorContainer.style.display = 'none';
-    errorContainer.innerHTML = '';
-    successContainer.style.display = 'none';
-    successContainer.innerHTML = '';
+    if (input) {
+        input.classList.add('error');
+    }
     
-    document.querySelectorAll('.field-error').forEach(el => el.textContent = '');
-    document.querySelectorAll('input').forEach(el => el.classList.remove('error'));
+    if (errorDiv) {
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';  // Явно устанавливаем display
+        errorDiv.classList.add('show');
+    }
 }
 
-function showErrors(errors) {
-    errors.forEach(error => {
-        const fieldError = document.getElementById(`${error.field}-error`);
-        const input = document.querySelector(`[name="${error.field}"]`);
-        
-        if (fieldError && input) {
-            fieldError.textContent = error.message;
-            input.classList.add('error');
-        } else if (error.field === 'data' || error.field === 'general') {
-            const errorContainer = document.getElementById('error-container');
-            errorContainer.textContent = error.message;
-            errorContainer.style.display = 'block';
-        }
+function clearFieldError(fieldName) {
+    const input = document.querySelector(`input[name="${fieldName}"]`);
+    const errorDiv = document.getElementById(`${fieldName}-error`);
+    
+    if (input) {
+        input.classList.remove('error');
+    }
+    
+    if (errorDiv) {
+        errorDiv.textContent = '';
+        errorDiv.style.display = 'none';  // Явно скрываем
+        errorDiv.classList.remove('show');
+    }
+}
+
+function clearAllFieldErrors() {
+    const inputs = document.querySelectorAll('input.error');
+    inputs.forEach(input => {
+        input.classList.remove('error');
+    });
+    
+    const errorDivs = document.querySelectorAll('.field-error');
+    errorDivs.forEach(div => {
+        div.textContent = '';
+        div.style.display = 'none';  // Явно скрываем
+        div.classList.remove('show');
     });
 }
-
-function showSuccessModal() {
-    const modal = document.getElementById('successModal');
-    modal.style.display = 'block';
-}
-
-function hideSuccessModal() {
-    const modal = document.getElementById('successModal');
-    modal.style.display = 'none';
-}
-
-document.getElementById("anthroForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    clearErrors();
-    
-    const form = e.target;
-    const formData = new FormData(form);
-
-    const data = {};
-    formData.forEach((value, key) => {
-        data[key] = value ? parseFloat(value) : null;
-    });
-
-    try {
-        const response = await fetch("/fits/add_anthropometry", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify(data)
-        });
-
-        const result = await response.json();
-
-        if (result.success) {
-            showSuccessModal();
-        } else {
-            if (result.errors) {
-                showErrors(result.errors);
-            } else {
-                const errorContainer = document.getElementById('error-container');
-                errorContainer.textContent = result.error || "Не удалось сохранить данные";
-                errorContainer.style.display = 'block';
-            }
-        }
-    } catch (err) {
-        console.error("Ошибка при отправке:", err);
-        const errorContainer = document.getElementById('error-container');
-        errorContainer.textContent = "Ошибка сети. Попробуйте еще раз.";
-        errorContainer.style.display = 'block';
-    }
-});
-
-// Обработчик нажатия кнопки OK в модальном окне
-document.getElementById('modalOkBtn').addEventListener('click', () => {
-    hideSuccessModal();
-    window.location.href = '/dashboard';
-});
-
-// Закрытие модального окна при клике вне его области
-window.addEventListener('click', (e) => {
-    const modal = document.getElementById('successModal');
-    if (e.target === modal) {
-        hideSuccessModal();
-        window.location.href = '/dashboard';
-    }
-});
 
 document.addEventListener('DOMContentLoaded', async () => {
+    errorHandler.init('error-container', 'success-container');
+
+    // Загрузка существующих данных
     try {
         const response = await fetch('/fits/get_anthropometry', {
             credentials: "include"
@@ -237,12 +185,100 @@ document.addEventListener('DOMContentLoaded', async () => {
             Object.keys(result.data).forEach(key => {
                 const input = form.querySelector(`[name="${key}"]`);
                 if (input && result.data[key] !== null) {
-                    input.value = result.data[key];
+                    // Округляем до целого числа при отображении
+                    input.value = Math.round(parseFloat(result.data[key]));
                 }
             });
         }
     } catch (err) {
         console.error('Не удалось загрузить данные:', err);
     }
+
+    // Обработка отправки формы
+    document.getElementById("anthroForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        
+        errorHandler.clearErrors();
+        clearAllFieldErrors();
+        
+        const form = e.target;
+        const formData = new FormData(form);
+
+        // Список обязательных полей
+        const requiredFields = ['height', 'hip', 'lowerLeg', 'footLength', 'torsoMax', 'upperarm', 'forearm'];
+        const fieldNames = {
+            'height': 'Рост',
+            'hip': 'Длина бедра',
+            'lowerLeg': 'Длина голени',
+            'footLength': 'Длина стопы',
+            'torsoMax': 'Длина туловища',
+            'upperarm': 'Длина плеча',
+            'forearm': 'Длина предплечья'
+        };
+        
+        // Проверка заполнения обязательных полей
+        let hasEmptyFields = false;
+        requiredFields.forEach(field => {
+            const value = formData.get(field);
+            if (!value || value.trim() === '') {
+                showFieldError(field, `${fieldNames[field]} обязательно для заполнения`);
+                hasEmptyFields = true;
+            }
+        });
+        
+        if (hasEmptyFields) {
+            errorHandler.showGeneralError('Заполните все обязательные поля', 'warning');
+            return;
+        }
+
+        const data = {};
+        formData.forEach((value, key) => {
+            // Используем parseInt для целых чисел
+            data[key] = value ? parseInt(value, 10) : null;
+        });
+
+        // Отправка данных
+        try {
+            const response = await fetch("/fits/add_anthropometry", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                errorHandler.showSuccess('Данные успешно сохранены!', () => {
+                    window.location.href = '/dashboard';
+                });
+            } else if (result.errors && Array.isArray(result.errors)) {
+                // Обработка ошибок валидации от бекенда
+                let hasGeneralError = false;
+                
+                result.errors.forEach(error => {
+                    if (error.field === 'data' || error.field === 'general') {
+                        errorHandler.showGeneralError(error.message, 'error');
+                        hasGeneralError = true;
+                    } else if (error.field) {
+                        showFieldError(error.field, error.message);
+                    }
+                });
+                
+                if (!hasGeneralError && result.errors.length > 0) {
+                    errorHandler.showGeneralError('Исправьте ошибки в полях', 'error');
+                }
+            } else if (result.error) {
+                errorHandler.showGeneralError(result.error, 'error');
+            } else {
+                errorHandler.showGeneralError('Произошла неизвестная ошибка', 'error');
+            }
+        } catch (error) {
+            console.error('Network error:', error);
+            errorHandler.showGeneralError('Ошибка сети. Проверьте подключение к интернету и попробуйте снова.', 'error');
+        }
+    });
 });
 </script>

@@ -1,73 +1,91 @@
-/* --- Основной контейнер --- */
+/**
+ * BikeFit - Moderation Page Styles
+ * Bike moderation interface
+ */
+
+/* ============================================
+   MODERATION CONTAINER
+   ============================================ */
 
 #moderation-container {
     display: flex;
-    gap: 30px;
-    background: var(--surface);
-    padding: 20px;
+    gap: var(--spacing-8);
+    background: var(--bg-primary);
+    padding: var(--spacing-6);
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-lg);
     flex: 1;
-    /* занимает оставшееся место под header */
     width: 90%;
-    height: 90%;
-    margin: 20px auto;
+    max-width: var(--container-2xl);
+    margin: var(--spacing-6) auto;
+    min-height: calc(100vh - 120px);
+    overflow-y: auto;
 }
 
-
-/* --- Левая колонка: список велосипедов --- */
+/* ============================================
+   PENDING BIKES LIST
+   ============================================ */
 
 #pending-bikes {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: var(--spacing-4);
     overflow-y: auto;
-    padding-right: 10px;
-    border-right: 1px solid var(--border);
+    padding-right: var(--spacing-3);
+    border-right: 1px solid var(--border-color);
 }
 
 .empty-message {
     text-align: center;
-    color: var(--text-muted);
-    font-size: 16px;
-    margin-top: 40px;
+    color: var(--text-tertiary);
+    font-size: var(--font-size-base);
+    margin-top: var(--spacing-10);
+    padding: var(--spacing-8);
 }
+
+/* ============================================
+   MODERATION BUTTONS
+   ============================================ */
 
 .bike-item .approve-btn,
 .bike-item .reject-btn {
     flex: 1;
-    padding: 8px 12px;
+    padding: var(--spacing-2) var(--spacing-4);
     border: none;
-    border-radius: var(--radius);
-    font-size: 14px;
+    border-radius: var(--radius-lg);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
     cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
-    margin-top: 8px;
+    transition: all var(--transition-fast);
+    margin-top: var(--spacing-3);
 }
 
 .bike-item .approve-btn {
-    background-color: var(--success-color);
-    color: var(--surface);
+    background-color: var(--color-primary);
+    color: var(--text-inverse);
 }
 
 .bike-item .approve-btn:hover {
-    background-color: var(--success-hover);
-    transform: scale(0.98);
+    background-color: var(--color-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
 }
 
 .bike-item .reject-btn {
-    background-color: var(--danger-color);
-    color: var(--surface);
+    background-color: var(--color-primary);
+    color: var(--text-inverse);
 }
 
 .bike-item .reject-btn:hover {
-    background-color: var(--danger-hover);
-    transform: scale(0.98);
+    background-color: var(--color-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
 }
 
-
-/* --- Правая колонка: canvas + кнопки размеров --- */
+/* ============================================
+   PREVIEW SECTION
+   ============================================ */
 
 #preview-section {
     flex: 2;
@@ -75,16 +93,92 @@
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    gap: 15px;
+    gap: var(--spacing-4);
     height: 100%;
 }
 
 #bike-canvas {
-    border: 1px solid var(--border-light);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-xl);
-    background: var(--surface);
+    background: var(--bg-canvas);
     box-shadow: var(--shadow-sm);
     width: 100%;
     flex-grow: 1;
     display: block;
+    transition: border-color var(--transition-base);
+}
+
+#bike-canvas:hover {
+    border-color: var(--border-color-hover);
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+/* Narrow windows and large tablets */
+@media (max-width: 1199px) {
+    #moderation-container {
+        flex-direction: column;
+        width: 95%;
+        padding: var(--spacing-5);
+        gap: var(--spacing-6);
+        min-height: auto;
+    }
+    
+    #pending-bikes {
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        padding-right: 0;
+        padding-bottom: var(--spacing-4);
+        max-height: 500px;
+        min-height: 200px;
+    }
+    
+    #preview-section {
+        min-height: 450px;
+    }
+}
+
+/* Tablet */
+@media (max-width: 1023px) {
+    #pending-bikes {
+        max-height: 400px;
+    }
+    
+    #preview-section {
+        min-height: 400px;
+    }
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+    #moderation-container {
+        width: 95%;
+        margin: var(--spacing-4) auto;
+        padding: var(--spacing-4);
+        gap: var(--spacing-5);
+    }
+    
+    #bike-canvas {
+        min-height: 300px;
+    }
+}
+
+/* Small Mobile */
+@media (max-width: 479px) {
+    #moderation-container {
+        width: 100%;
+        margin: var(--spacing-2) auto;
+        padding: var(--spacing-3);
+        border-radius: var(--radius-lg);
+    }
+    
+    #pending-bikes {
+        max-height: 300px;
+    }
+    
+    #bike-canvas {
+        min-height: 250px;
+    }
 }

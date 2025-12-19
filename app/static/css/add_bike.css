@@ -1,233 +1,247 @@
-/* app/static/css/compare.css */
+/**
+ * BikeFit - Add Bike Page Styles
+ * Responsive form layout for bike geometry input
+ */
 
+/* ============================================
+   BIKE FORM CONTAINER
+   ============================================ */
 
-/* === Основной контейнер сравнения === */
-
-.compare-section {
-    display: flex;
-    gap: 30px;
-    padding: 20px;
-    max-width: 1400px;
+.bike-container {
+    max-width: var(--container-xl);
     margin: 0 auto;
-    min-height: calc(100vh - 70px);
+    padding: var(--spacing-6);
 }
 
+.bike-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-8);
+}
 
-/* === Панели велосипедов === */
+/* ============================================
+   FORM SECTIONS
+   ============================================ */
 
-.bike-panel {
-    flex: 1;
-    background: var(--surface);
-    border-radius: var(--radius-lg);
+.form-section {
+    background: var(--bg-primary);
+    padding: var(--spacing-6);
+    border-radius: var(--radius-xl);
     box-shadow: var(--shadow-md);
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+    transition: box-shadow var(--transition-base);
 }
 
-.bike-panel h3 {
-    text-align: center;
-    margin: 0;
-    color: var(--primary-color);
-    font-size: 20px;
-    font-weight: 600;
-}
-
-
-/* === Canvas === */
-
-.bike-canvas {
-    width: 100%;
-    height: 400px;
-    border: 2px solid var(--border);
-    border-radius: var(--radius-lg);
-    background: #fafafa;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-
-/* === Элементы управления === */
-
-.controls {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.input-group {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.input-group label {
-    font-weight: 600;
-    color: var(--text-primary);
-    font-size: 14px;
-    margin-bottom: 5px;
-}
-
-.input-row {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-.input-row input[type="text"] {
-    flex: 1;
-}
-
-.input-row button {
-    white-space: nowrap;
-}
-
-
-/* === Кнопки === */
-
-.reset-btn {
-    width: 100%;
-    margin-top: 10px;
-}
-
-
-/* === Autocomplete списки === */
-
-.autocomplete-list {
-    position: absolute;
-    z-index: 1000;
-    background: var(--surface);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-md);
-    max-height: 200px;
-    overflow-y: auto;
-    width: calc(100% - 24px);
-    /* Учитываем padding и border */
-}
-
-.autocomplete-item {
-    padding: 10px 12px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    border-bottom: 1px solid var(--border);
-}
-
-.autocomplete-item:last-child {
-    border-bottom: none;
-}
-
-.autocomplete-item:hover {
-    background-color: var(--background);
-}
-
-.autocomplete-item.selected {
-    background-color: var(--primary-color);
-    color: white;
-}
-
-
-/* === Поля ввода === */
-
-input[type="text"][readonly] {
-    cursor: pointer;
-    background-color: var(--surface);
-}
-
-input[type="text"]:not([readonly]):focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(30, 107, 255, 0.2);
-}
-
-
-/* === Селекты === */
-
-select {
-    cursor: pointer;
-}
-
-
-/* === Адаптивность === */
-
-@media (max-width: 1024px) {
-    .compare-section {
-        flex-direction: column;
-        gap: 20px;
-        padding: 15px;
-    }
-    .bike-panel {
-        max-width: 600px;
-        margin: 0 auto;
-        width: 100%;
-    }
-}
-
-@media (max-width: 640px) {
-    .compare-section {
-        padding: 10px;
-        gap: 15px;
-    }
-    .bike-panel {
-        padding: 15px;
-    }
-    .bike-canvas {
-        height: 300px;
-    }
-    .input-row {
-        flex-direction: column;
-        gap: 8px;
-    }
-    .input-row button {
-        width: 100%;
-    }
-}
-
-
-/* === Исправление позиционирования autocomplete === */
-
-.input-group {
-    position: relative;
-}
-
-
-/* === Улучшение визуального состояния === */
-
-.bike-panel {
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.bike-panel:hover {
-    transform: translateY(-2px);
+.form-section:hover {
     box-shadow: var(--shadow-lg);
 }
 
-
-/* === Индикаторы загрузки === */
-
-.loading {
-    opacity: 0.6;
-    pointer-events: none;
+.form-section h3 {
+    margin-bottom: var(--spacing-5);
+    color: var(--color-primary);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    padding-bottom: var(--spacing-3);
+    border-bottom: 2px solid var(--color-primary);
 }
 
-.loading::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 20px;
-    height: 20px;
-    margin: -10px 0 0 -10px;
-    border: 2px solid var(--border-light);
-    border-top: 2px solid var(--primary-color);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
+/* ============================================
+   SIZE MANAGEMENT
+   ============================================ */
+
+.sizes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-4);
+    padding: var(--spacing-4);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-lg);
 }
 
-@keyframes spin {
-    0% {
-        transform: rotate(0deg);
+.sizes-header span {
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
+    color: var(--text-primary);
+}
+
+/* ============================================
+   GEOMETRY TABLE
+   ============================================ */
+
+.geometry-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    overflow: visible;
+}
+
+.geometry-table th,
+.geometry-table td {
+    padding: var(--spacing-3) var(--spacing-4);
+    border: 1px solid var(--border-color);
+    text-align: left;
+    font-size: var(--font-size-sm);
+}
+
+.geometry-table th {
+    background: var(--bg-tertiary);
+    font-weight: var(--font-weight-semibold);
+    position: sticky;
+    top: 0;
+    z-index: var(--z-sticky);
+    color: var(--text-primary);
+}
+
+.geometry-table .header-cell {
+    display: flex;
+    gap: var(--spacing-2);
+    align-items: center;
+}
+
+.geometry-table .header-cell input {
+    flex: 1;
+    min-width: 80px;
+}
+
+.geometry-table .header-cell .btn {
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-base);
+    line-height: 1;
+}
+
+.geometry-table .param-cell,
+.geometry-table .shared-param {
+    font-weight: var(--font-weight-medium);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.geometry-table input[type="number"],
+.geometry-table input[type="text"] {
+    width: 100%;
+    min-width: 80px;
+    padding: var(--spacing-2) var(--spacing-3);
+    transition: border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.geometry-table input.error {
+    border-color: var(--color-danger);
+    background-color: var(--color-danger-light);
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.1);
+}
+
+.geometry-table input.error:focus {
+    border-color: var(--color-danger);
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.2);
+}
+
+/* Error message under input */
+.field-error-message {
+    display: block;
+    color: var(--color-danger);
+    font-size: var(--font-size-xs);
+    margin-top: var(--spacing-1);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.2;
+}
+
+.geometry-table .shared-input {
+    background: var(--color-info-light);
+}
+
+/* ============================================
+   FORM ACTIONS
+   ============================================ */
+
+.form-actions {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-4);
+    padding: var(--spacing-6) 0;
+}
+
+.form-actions .btn {
+    min-width: 200px;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+/* Tablet */
+@media (max-width: 1023px) {
+    .bike-container {
+        padding: var(--spacing-4);
     }
-    100% {
-        transform: rotate(360deg);
+    
+    .form-section {
+        padding: var(--spacing-5);
+    }
+    
+    .geometry-table {
+        font-size: var(--font-size-xs);
+    }
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+    .bike-container {
+        padding: var(--spacing-3);
+    }
+    
+    .form-section {
+        padding: var(--spacing-4);
+    }
+    
+    .form-section h3 {
+        font-size: var(--font-size-lg);
+    }
+    
+    .sizes-header {
+        flex-direction: column;
+        gap: var(--spacing-3);
+        align-items: stretch;
+    }
+    
+    .geometry-table th,
+    .geometry-table td {
+        padding: var(--spacing-2);
+        font-size: var(--font-size-xs);
+    }
+    
+    .geometry-table .header-cell {
+        flex-direction: column;
+        gap: var(--spacing-2);
+    }
+    
+    .geometry-table .header-cell input {
+        width: 100%;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        gap: var(--spacing-3);
+    }
+    
+    .form-actions .btn {
+        width: 100%;
+        min-width: auto;
+    }
+}
+
+/* Small Mobile */
+@media (max-width: 479px) {
+    .bike-container {
+        padding: var(--spacing-2);
+    }
+    
+    .form-section {
+        padding: var(--spacing-3);
+    }
+    
+    .geometry-table {
+        display: block;
+        overflow-x: auto;
     }
 }

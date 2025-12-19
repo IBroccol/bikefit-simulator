@@ -2,33 +2,39 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Добавить велосипед</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добавить велосипед - BikeFit</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/add_bike.css') }}">
 </head>
 <body>
-<div class="container bike-container">
-    <div class="top-bar">
-        <button class="btn btn-primary" onclick="window.location.href='/dashboard'">В меню</button>
-    </div>
+    <header>
+        <h1>Добавить велосипед</h1>
+        <button class="btn btn-primary" onclick="window.location.href='/dashboard'">← В меню</button>
+    </header>
 
-    <h2>Параметры велосипеда</h2>
+    <div class="page-wrapper">
+        <div class="container bike-container">
+            <h2 class="text-center">Параметры велосипеда</h2>
     
-    <div class="bike-form">
-        <div class="form-section">
-            <div class="field-row">
-                <span class="field-label">Модель велосипеда</span>
-                <div class="field-input">
-                    <input type="text" name="model" placeholder="Например, Trek Domane SL 6" required>
+            <div id="error-container" class="error-container" style="display: none;"></div>
+            <div id="success-container" class="success-container" style="display: none;"></div>
+            
+            <div class="bike-form">
+                <div class="form-section">
+                    <h3>Основная информация</h3>
+                    <div class="form-group">
+                        <label for="model">Модель велосипеда</label>
+                        <input type="text" id="model" name="model" placeholder="Например, Trek Domane SL 6" required>
+                    </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="form-section">        
-            <div class="sizes-header">
-                <span>Управление размерами</span>
-                <button type="button" class="btn btn-info" id="addSizeBtn">+ Добавить размер</button>
-            </div>
+                <div class="form-section">
+                    <div class="sizes-header">
+                        <span>Управление размерами</span>
+                        <button type="button" class="btn btn-info" id="addSizeBtn">+ Добавить размер</button>
+                    </div>
 
             <table id="geometryTable" class="geometry-table">
                 <thead>
@@ -44,46 +50,49 @@
                 </thead>
                 <tbody>
                     <tr><td class="section-title" colspan="100">Геометрия рамы</td></tr>
-                    <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/seatTube.png" alt="Seat tube"></div>Длина подседельной трубы, мм</td><td><input type="number" step="0.1" name="seatTube"></td></tr>
-                    <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/seatAngle.png" alt="Seat angle"></div>Угол подседельной трубы, град.</td><td><input type="number" step="0.1" name="seatAngle"></td></tr>
-                    <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/headTube.png" alt="Head tube"></div>Длина рулевого стакана, мм</td><td><input type="number" step="0.1" name="headTube"></td></tr>
-                    <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/headAngle.png" alt="Head angle"></div>Угол рулевого стакана, град.</td><td><input type="number" step="0.1" name="headAngle"></td></tr>
-                    <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/bbdrop.png" alt="BB drop"></div>Провис каретки, мм</td><td><input type="number" step="0.1" name="bbdrop"></td></tr>
-                    <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/chainstay.png" alt="Chainstay"></div>Длина нижних перьев, мм</td><td><input type="number" step="0.1" name="chainstay"></td></tr>
-                    <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/wheelbase.png" alt="Wheelbase"></div>Колёсная база, мм</td><td><input type="number" step="0.1" name="wheelbase"></td></tr>
-                    <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/stack.png" alt="Stack"></div>Стэк (Stack), мм</td><td><input type="number" step="0.1" name="stack"></td></tr>
-                    <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/reach.png" alt="Reach"></div>Рич (Reach), мм</td><td><input type="number" step="0.1" name="reach"></td></tr>
+                    <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/seatTube.png" alt="Seat tube"></div>Длина подседельной трубы, мм *</td><td><input type="number" step="0.1" name="seatTube" required></td></tr>
+                    <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/seatAngle.png" alt="Seat angle"></div>Угол подседельной трубы, град. *</td><td><input type="number" step="0.1" name="seatAngle" required></td></tr>
+                    <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/headTube.png" alt="Head tube"></div>Длина рулевого стакана, мм *</td><td><input type="number" step="0.1" name="headTube" required></td></tr>
+                    <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/headAngle.png" alt="Head angle"></div>Угол рулевого стакана, град. *</td><td><input type="number" step="0.1" name="headAngle" required></td></tr>
+                    <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/bbdrop.png" alt="BB drop"></div>Провис каретки, мм *</td><td><input type="number" step="0.1" name="bbdrop" required></td></tr>
+                    <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/chainstay.png" alt="Chainstay"></div>Длина нижних перьев, мм *</td><td><input type="number" step="0.1" name="chainstay" required></td></tr>
+                    <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/wheelbase.png" alt="Wheelbase"></div>Колёсная база, мм *</td><td><input type="number" step="0.1" name="wheelbase" required></td></tr>
+                    <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/stack.png" alt="Stack"></div>Стэк (Stack), мм *</td><td><input type="number" step="0.1" name="stack" required></td></tr>
+                    <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/reach.png" alt="Reach"></div>Рич (Reach), мм *</td><td><input type="number" step="0.1" name="reach" required></td></tr>
 
                     <tr><td class="section-title" colspan="100">Колёса и трансмиссия</td></tr>
-                    <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/rimD.png" alt="Диаметр обода"></div>Диаметр обода, мм</td><td colspan="100" class="shared-input"><input type="number" step="0.1" name="rimD"></td></tr>
-                    <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/tyreW.png" alt="Ширина покрышки"></div>Ширина покрышек, мм</td><td colspan="100" class="shared-input"><input type="number" step="0.1" name="tyreW"></td></tr>
-                    <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/crankLen.png" alt="Crank length"></div>Длина шатунов, мм</td><td><input type="number" step="0.1" name="crankLen"></td></tr>
+                    <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/rimD.png" alt="Диаметр обода"></div>Диаметр обода, мм *</td><td colspan="100" class="shared-input"><input type="number" step="0.1" name="rimD" required></td></tr>
+                    <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/tyreW.png" alt="Ширина покрышки"></div>Ширина покрышек, мм *</td><td colspan="100" class="shared-input"><input type="number" step="0.1" name="tyreW" required></td></tr>
+                    <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/crankLen.png" alt="Crank length"></div>Длина шатунов, мм *</td><td><input type="number" step="0.1" name="crankLen" required></td></tr>
 
                     <tr><td class="section-title" colspan="100">Посадка и органы управления</td></tr>
-                    <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/stemLen.png" alt="Stem length"></div>Длина выноса, мм</td><td><input type="number" step="0.1" name="stemLen"></td></tr>
-                    <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/stemAngle.png" alt="Stem angle"></div>Угол выноса, град.</td><td colspan="100" class="shared-input"><input type="number" step="0.1" name="stemAngle"></td></tr>
-                    <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/minStemHight.png" alt="Min stem height"></div>Мин. высота установки выноса, мм</td><td colspan="100" class="shared-input"><input type="number" step="0.1" name="minStemHight"></td></tr>
-                    <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/maxStemHight.png" alt="Max stem height"></div>Макс. высота установки выноса, мм</td><td colspan="100" class="shared-input"><input type="number" step="0.1" name="maxStemHight"></td></tr>
-                    <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/barReach.png" alt="Bar reach"></div>Рич руля, мм</td><td colspan="100" class="shared-input"><input type="number" step="0.1" name="barReach"></td></tr>
-                    <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/barDrop.png" alt="Bar drop"></div>Дроп руля, мм</td><td colspan="100" class="shared-input"><input type="number" step="0.1" name="barDrop"></td></tr>
-                    <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/shifterReach.png" alt="Shifter reach"></div>Рич тормозных рукояток, мм</td><td colspan="100" class="shared-input"><input type="number" step="0.1" name="shifterReach"></td></tr>
+                    <tr><td class="param-cell"><div class="tooltip">?<img src="static/png/hints/stemLen.png" alt="Stem length"></div>Длина выноса, мм *</td><td><input type="number" step="0.1" name="stemLen" required></td></tr>
+                    <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/stemAngle.png" alt="Stem angle"></div>Угол выноса, град. *</td><td colspan="100" class="shared-input"><input type="number" step="0.1" name="stemAngle" required></td></tr>
+                    <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/minStemHight.png" alt="Min stem height"></div>Мин. высота установки выноса, мм (по умолчанию 30)</td><td colspan="100" class="shared-input"><input type="number" step="0.1" name="minStemHight" placeholder="30"></td></tr>
+                    <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/maxStemHight.png" alt="Max stem height"></div>Макс. высота установки выноса, мм (по умолчанию 70)</td><td colspan="100" class="shared-input"><input type="number" step="0.1" name="maxStemHight" placeholder="70"></td></tr>
+                    <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/barReach.png" alt="Bar reach"></div>Рич руля, мм *</td><td colspan="100" class="shared-input"><input type="number" step="0.1" name="barReach" required></td></tr>
+                    <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/barDrop.png" alt="Bar drop"></div>Дроп руля, мм *</td><td colspan="100" class="shared-input"><input type="number" step="0.1" name="barDrop" required></td></tr>
+                    <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/shifterReach.png" alt="Shifter reach"></div>Рич тормозных рукояток, мм (по умолчанию 50)</td><td colspan="100" class="shared-input"><input type="number" step="0.1" name="shifterReach" placeholder="50"></td></tr>
 
                     <tr><td class="section-title" colspan="100">Седло</td></tr>
-                    <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/saddleLen.png" alt="Saddle length"></div>Длина седла, мм</td><td colspan="100" class="shared-input"><input type="number" step="0.1" name="saddleLen"></td></tr>
-                    <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/saddleRailLen.png" alt="Saddle rail length"></div>Длина рейлов седла, мм</td><td colspan="100" class="shared-input"><input type="number" step="0.1" name="saddleRailLen"></td></tr>
-                    <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/saddleHeight.png" alt="Saddle height"></div>Высота седла, мм</td><td colspan="100" class="shared-input"><input type="number" step="0.1" name="saddleHeight"></td></tr>
-                    <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/minseatpostLen.png" alt="Min seatpost length"></div>Мин. высота установки подседельного штыря, мм</td><td colspan="100" class="shared-input"><input type="number" step="0.1" name="minseatpostLen"></td></tr>
-                    <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/maxseatpostLen.png" alt="Max seatpost length"></div>Макс. высота установки подседельного штыря, мм</td><td colspan="100" class="shared-input"><input type="number" step="0.1" name="maxseatpostLen"></td></tr>
+                    <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/saddleLen.png" alt="Saddle length"></div>Длина седла, мм *</td><td colspan="100" class="shared-input"><input type="number" step="0.1" name="saddleLen" required></td></tr>
+                    <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/saddleRailLen.png" alt="Saddle rail length"></div>Длина рейлов седла, мм (по умолчанию 60)</td><td colspan="100" class="shared-input"><input type="number" step="0.1" name="saddleRailLen" placeholder="60"></td></tr>
+                    <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/saddleHeight.png" alt="Saddle height"></div>Высота седла, мм (по умолчанию 50)</td><td colspan="100" class="shared-input"><input type="number" step="0.1" name="saddleHeight" placeholder="50"></td></tr>
+                    <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/minseatpostLen.png" alt="Min seatpost length"></div>Мин. высота установки подседельного штыря, мм (по умолчанию 50)</td><td colspan="100" class="shared-input"><input type="number" step="0.1" name="minseatpostLen" placeholder="50"></td></tr>
+                    <tr><td class="shared-param"><div class="tooltip">?<img src="static/png/hints/maxseatpostLen.png" alt="Max seatpost length"></div>Макс. высота установки подседельного штыря, мм (по умолчанию 250)</td><td colspan="100" class="shared-input"><input type="number" step="0.1" name="maxseatpostLen" placeholder="250"></td></tr>
                 </tbody>
             </table>
-        </div>
+                </div>
 
-        <div class="form-actions">
-            <button type="button" class="btn btn-success btn-lg" id="submitBtn">Сохранить данные</button>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-success btn-lg" id="submitBtn">Сохранить велосипед</button>
+                </div>
+            </div>
         </div>
     </div>
-</div>
 
+<script src="{{ url_for('static', filename='js/tooltip-position.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/theme-toggle.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js/add_bike.js') }}"></script>
 </body>
 </html>

@@ -55,11 +55,17 @@ def create_user_account(username, password):
 def authenticate_user(username, password):
     user = get_user_by_username(username)
     if user and check_password_hash(user["password_hash"], password):
-        return {"id": user["id"], "role": user["role"]}
+        return {"id": user["id"], "role": user["role"], "username": user["username"]}
     return None
 
 def get_user_by_username(username):
     return next((u for u in _mock_db["users"] if u["username"] == username), None)
+
+def get_user_by_id(user_id):
+    user = next((u for u in _mock_db["users"] if u["id"] == user_id), None)
+    if user:
+        return {"id": user["id"], "username": user["username"], "role": user["role"]}
+    return None
 
 # --- Велосипеды ---
 def add_user_bike(user_id: int, bike: dict) -> dict:

@@ -1,0 +1,252 @@
+.page {
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  flex: 1;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--spacing-6) var(--spacing-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-5);
+}
+
+.section {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-5);
+}
+
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-4);
+}
+
+.sizesHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-4);
+}
+
+/* Table */
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.table th,
+.table td {
+  border: 1px solid var(--border-color);
+  padding: var(--spacing-2) var(--spacing-3);
+  vertical-align: middle;
+}
+
+.paramHeader {
+  background-color: var(--bg-tertiary);
+  font-weight: 600;
+  min-width: 260px;
+  text-align: left;
+}
+
+.sizeHeader {
+  background-color: var(--bg-tertiary);
+  min-width: 130px;
+  text-align: center;
+}
+
+.sizeInput {
+  width: 80px;
+  padding: var(--spacing-1) var(--spacing-2);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  margin-right: var(--spacing-1);
+}
+
+.sectionRow {
+  background-color: var(--bg-tertiary);
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  padding: var(--spacing-2) var(--spacing-3);
+}
+
+.paramCell {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  color: var(--text-primary);
+}
+
+.numInput {
+  width: 100%;
+  min-width: 90px;
+  padding: var(--spacing-1) var(--spacing-2);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  box-sizing: border-box;
+}
+
+.numInput:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* Shared params grid */
+.sharedGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--spacing-4);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.input {
+  padding: var(--spacing-2) var(--spacing-3);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  transition: border-color var(--transition-fast);
+  box-sizing: border-box;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* Hint tooltip */
+.hintWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.hintIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background-color: var(--accent);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.hintImg {
+  display: none;
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 150px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 200;
+  border: 1px solid var(--border-color);
+}
+
+.hintWrap:hover .hintImg {
+  display: block;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: var(--spacing-2);
+}
+
+/* URL import section */
+.importHint {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-3);
+}
+
+.importHint a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.importHint a:hover {
+  text-decoration: underline;
+}
+
+.importForm {
+  display: flex;
+  gap: var(--spacing-3);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.importForm .input {
+  flex: 1;
+  min-width: 280px;
+}
+
+/* Error states */
+.inputError {
+  border-color: var(--error) !important;
+}
+
+.fieldError {
+  font-size: 0.75rem;
+  color: var(--error);
+  margin-top: 2px;
+}
+
+/* Table cell wrapper for server error tooltip */
+.cellWrap {
+  position: relative;
+  vertical-align: top;
+}
+
+.cellError {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--error);
+  margin-top: 2px;
+  line-height: 1.2;
+  max-width: 120px;
+  word-break: break-word;
+}

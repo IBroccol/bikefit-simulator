@@ -1,0 +1,69 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-primary);
+  padding: var(--spacing-4);
+  position: relative;
+}
+
+.themeBtn {
+  position: fixed;
+  top: var(--spacing-4);
+  right: var(--spacing-4);
+}
+
+.card {
+  width: 100%;
+  max-width: 420px;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: var(--spacing-5);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.showPassword {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.showPassword input[type='checkbox'] {
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+.submitBtn {
+  margin-top: var(--spacing-2);
+}
+
+.link {
+  text-align: center;
+  margin-top: var(--spacing-5);
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.link a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.link a:hover {
+  text-decoration: underline;
+}

@@ -71,53 +71,62 @@ def validate_bike_data(bikes: List[Dict[str, Any]]) -> ValidationResult:
     optional_defaults = {
         "minStemHight": 30,
         "maxStemHight": 70,
-        "shifterReach": 50,
+        "shifterReach": 70,
         "saddleRailLen": 60,
         "saddleHeight": 50,
         "minseatpostLen": 50,
         "maxseatpostLen": 250
     }
-    
+
+    # Shared params are the same for all sizes — don't include size label in their error messages
+    shared_params = {
+        "rimD", "tyreW", "stemAngle", "minStemHight", "maxStemHight",
+        "barReach", "barDrop", "shifterReach", "saddleLen",
+        "saddleRailLen", "saddleHeight", "minseatpostLen", "maxseatpostLen",
+    }
+
     # Валидация каждого размера
     for idx, bike in enumerate(bikes):
         size = bike.get("size", "").strip()
         size_label = f"размер '{size}'" if size else f"размер #{idx + 1}"
-        
+
         # Проверка всех параметров на соответствие диапазонам
         for param, limits in param_ranges.items():
             value = bike.get(param)
-            
+
             # Если параметр отсутствует и он опциональный, устанавливаем значение по умолчанию
             if (value is None or value == "") and param in optional_defaults:
                 bike[param] = optional_defaults[param]
                 continue
-            
+
             # Если параметр присутствует, проверяем его значение
             if value is not None and value != "":
                 try:
                     value = float(value)
                     bike[param] = value  # Сохраняем преобразованное значение
-                    
+
+                    is_shared = param in shared_params
+                    # Shared params: no size suffix, no size label in message
+                    field_name = param if is_shared else (f"{param}_{idx}" if idx > 0 else param)
+                    context = "" if is_shared else f" для {size_label}"
+
                     if value < limits["min"]:
-                        # Добавляем индекс к имени поля для точной идентификации
-                        field_name = f"{param}_{idx}" if idx > 0 else param
                         result.add_error(
                             field_name,
-                            f"{limits['name']} для {size_label} слишком мало (минимум {limits['min']})"
+                            f"{limits['name']}{context} слишком мало (минимум {limits['min']})"
                         )
                     elif value > limits["max"]:
-                        # Добавляем индекс к имени поля для точной идентификации
-                        field_name = f"{param}_{idx}" if idx > 0 else param
                         result.add_error(
                             field_name,
-                            f"{limits['name']} для {size_label} слишком велико (максимум {limits['max']})"
+                            f"{limits['name']}{context} слишком велико (максимум {limits['max']})"
                         )
                 except (ValueError, TypeError):
-                    # Добавляем индекс к имени поля для точной идентификации
-                    field_name = f"{param}_{idx}" if idx > 0 else param
+                    is_shared = param in shared_params
+                    field_name = param if is_shared else (f"{param}_{idx}" if idx > 0 else param)
+                    context = "" if is_shared else f" для {size_label}"
                     result.add_error(
                         field_name,
-                        f"{limits['name']} для {size_label} должно быть числом"
+                        f"{limits['name']}{context} должно быть числом"
                     )
         
         # Проверка логических связей между параметрами

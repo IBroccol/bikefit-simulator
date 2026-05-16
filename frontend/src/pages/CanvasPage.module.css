@@ -1,0 +1,122 @@
+.page {
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  display: flex;
+  flex-direction: column;
+}
+
+.layout {
+  flex: 1;
+  display: flex;
+  gap: var(--spacing-4);
+  padding: var(--spacing-4);
+  min-height: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 1200px) {
+  .layout {
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .sidebar {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--border-color);
+    min-height: auto !important;
+    max-height: none !important;
+  }
+
+  .canvasContainer {
+    flex: 0 0 auto !important;
+    padding: var(--spacing-4) !important;
+  }
+}
+
+.sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+  overflow-y: auto;
+}
+
+.canvasContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-4);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-color);
+  min-width: 0;
+}
+
+.canvasWrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  min-height: 0;
+}
+
+.hints {
+  background: var(--bg-primary);
+  padding: var(--spacing-3);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.hintsTitle {
+  margin: 0 0 var(--spacing-2) 0;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.hintsList {
+  margin: 0;
+  padding-left: var(--spacing-4);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.canvas {
+  flex: 1;
+  width: 100%;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  background: var(--bg-canvas, var(--bg-primary));
+  box-shadow: var(--shadow-sm);
+  min-height: 400px;
+}
+
+@media (max-width: 1200px) {
+  .canvas {
+    flex: none;
+    min-height: 350px;
+    height: 450px;
+    max-height: 550px;
+  }
+}
+
+@media (max-width: 767px) {
+  .canvas {
+    min-height: 300px;
+    height: 350px;
+    max-height: 400px;
+  }
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) 0;
+  flex-shrink: 0;
+}

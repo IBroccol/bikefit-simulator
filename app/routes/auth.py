@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, session
 from app.services import auth_service
 from app.utils.error_handler import handle_errors, validate_request_data, ValidationError
+from app.models import dao
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
@@ -35,6 +36,7 @@ def login():
     if result.get("success"):
         session["user_id"] = result["user"]["id"]
         session["user_role"] = result["user"]["role"]
+        session["username"] = result["user"]["username"]
         return jsonify({"success": True, "message": "Авторизация успешна"}), 200
     
     if "errors" in result:
@@ -47,4 +49,21 @@ def login():
 def logout():
     session.pop("user_id", None)
     session.pop("user_role", None)
+    session.pop("username", None)
     return jsonify({"success": True, "message": "Выход выполнен"}), 200
+
+@auth_bp.route("/me", methods=["GET"])
+def me():
+    """Return current session user info. Used by React SPA to restore auth state on page refresh."""
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "Not authenticated"}), 401
+    user = dao.get_user_by_id(user_id)
+    if not user:
+        session.clear()
+        return jsonify({"error": "User not found"}), 401
+    return jsonify({
+        "id": user["id"],
+        "username": user["username"],
+        "role": user["role"],
+    }), 200

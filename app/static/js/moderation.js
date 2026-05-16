@@ -1,6 +1,6 @@
 import { InterfacePreview } from './preview_interface.js';
 
-document.addEventListener("DOMContentLoaded", async() => {
+async function init() {
     const ui = new InterfacePreview(window.element_ids);
     const bikesContainer = document.getElementById("pending-bikes");
     const sizeButtonsContainer = document.getElementById("size-buttons");
@@ -35,8 +35,8 @@ document.addEventListener("DOMContentLoaded", async() => {
                         <p><b>Дата добавления:</b> ${new Date(bike.created_at).toLocaleString('ru-RU')}</p>
                     </div>
                     <div class="actions">
-                        <button class="approve-btn" data-id="${bike.id}">Сделать публичной</button>
-                        <button class="reject-btn" data-id="${bike.id}">Отклонить</button>
+                        <button class="btn btn-success approve-btn" data-id="${bike.id}">Сделать публичной</button>
+                        <button class="btn btn-danger reject-btn" data-id="${bike.id}">Отклонить</button>
                     </div>
                 `;
 
@@ -102,12 +102,16 @@ document.addEventListener("DOMContentLoaded", async() => {
 
             sizes.forEach(sizeObj => {
                 const btn = document.createElement("button");
-                btn.className = "size-btn";
+                btn.className = "btn btn-secondary size-btn";
                 btn.textContent = sizeObj.size;
                 btn.addEventListener("click", async() => {
                     // снимаем активность со всех кнопок
-                    sizeButtonsContainer.querySelectorAll(".size-btn").forEach(b => b.classList.remove("active"));
-                    btn.classList.add("active");
+                    sizeButtonsContainer.querySelectorAll(".size-btn").forEach(b => {
+                        b.classList.remove("btn-primary");
+                        b.classList.add("btn-secondary");
+                    });
+                    btn.classList.remove("btn-secondary");
+                    btn.classList.add("btn-primary");
                     // вызываем preview для выбранного размера
                     await ui.onSizeChoice(sizeObj.size);
                 });
@@ -120,4 +124,10 @@ document.addEventListener("DOMContentLoaded", async() => {
 
     // === Инициализация ===
     await fetchBikes();
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
+}

@@ -1,5 +1,8 @@
 Flask
+flask-cors
 python-dotenv
 psycopg[binary]
 psycopg-pool
 Werkzeug
+pytest
+pytest-flask

@@ -1,4 +1,15 @@
+# Python
 .venv
 .env
 **/__pycache__
+*.pyc
 config.py
+
+# Node / Vite
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# OS
+.DS_Store
+Thumbs.db

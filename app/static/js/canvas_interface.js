@@ -410,17 +410,17 @@ export class Interface {
 
                 // Перенаправляем на страницу настроек антропометрии через 3 секунды
                 setTimeout(() => {
-                    window.location.href = '/add_anthropometry';
+                    window.location.href = '/anthropometry';
                 }, 3000);
                 return;
             }
 
             this.drawer.INIT_ANTROPOMETRICS = result.data;
-        } catch (error) {
+        } catch {
             // В случае ошибки сети или сервера также перенаправляем на страницу настроек
             this.showError("Произошла ошибка при загрузке ваших параметров. Вы будете перенаправлены на страницу через 3 секунды.");
             setTimeout(() => {
-                window.location.href = '/add_anthropometry';
+                window.location.href = '/anthropometry';
             }, 3000);
         }
     }

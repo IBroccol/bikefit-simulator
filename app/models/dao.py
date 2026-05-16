@@ -27,13 +27,19 @@ def create_user_account(username, password):
 def authenticate_user(username, password):
     user = get_user_by_username(username)
     if user and check_password_hash(user["password_hash"], password):
-        return {"id": user["id"], "role": user["role"]}
+        return {"id": user["id"], "role": user["role"], "username": user["username"]}
     return None
 
 def get_user_by_username(username):
     with get_conn() as conn:
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute("SELECT * FROM users WHERE username=%s", (username,))
+            return cur.fetchone()
+
+def get_user_by_id(user_id):
+    with get_conn() as conn:
+        with conn.cursor(row_factory=dict_row) as cur:
+            cur.execute("SELECT id, username, role FROM users WHERE id=%s", (user_id,))
             return cur.fetchone()
 
 # --- Велосипеды ---

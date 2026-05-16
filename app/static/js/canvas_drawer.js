@@ -55,7 +55,7 @@ export class Drawer {
     }
 
     draw() {
-        this.scope.setup(this.canvas);
+        this.scope.activate();
         this.clearCanvas();
         this.calculateScale();
         this.scaleData();
@@ -66,7 +66,7 @@ export class Drawer {
     }
 
     draw_preview() {
-        this.scope.setup(this.canvas);
+        this.scope.activate();
         this.clearCanvas();
         this.calculateScale();
         this.scaleData();
@@ -132,8 +132,8 @@ export class Drawer {
     }
 
     clearCanvas() {
-        this.scope.setup(this.canvas);
-        this.project.activeLayer.removeChildren();
+        this.scope.activate();
+        this.project.clear();
         this.scope.view.update();
 
         Figure.allFigures = [];

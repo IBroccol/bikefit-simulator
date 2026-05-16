@@ -2,6 +2,9 @@ from flask import Blueprint, request, jsonify, session
 from app.services import bike_service
 from app.utils.decorators import role_required, auth_required
 from app.utils.error_handler import handle_errors, validate_request_data
+from app.utils.bikeinsights_parser import parse_bikeinsights_html
+import urllib.request
+import urllib.error
 
 bikes_bp = Blueprint("bikes", __name__, url_prefix="/bikes")
 
@@ -19,9 +22,10 @@ def add_bike():
     return jsonify(result)
 
 @bikes_bp.route("/list", methods=["GET"])
-@auth_required
 @handle_errors
 def list_visiable_bikes():
+    # No auth required: unauthenticated users get only public bikes;
+    # authenticated users also see their own private/pending bikes.
     user_id = session.get("user_id")
     result = bike_service.get_visiable_bike_models(user_id)
     return jsonify(result)
@@ -106,4 +110,48 @@ def delete_bike():
     
     bike_id = data.get("bike_id")
     result = bike_service.delete_user_bike(user_id, bike_id)
+    return jsonify(result)
+
+
+@bikes_bp.route("/parse_url", methods=["POST"])
+@auth_required
+@handle_errors
+def parse_bike_url():
+    """
+    Fetch a bikeinsights.com bike page and extract geometry data.
+    Request body: { "url": "https://bikeinsights.com/bikes/..." }
+    Response: { "model": "...", "sizes": [ { "label": "44", "stack": 501, ... }, ... ] }
+    """
+    data = request.json
+    validate_request_data(data, ["url"])
+
+    url = data.get("url", "").strip()
+    if not url:
+        return jsonify({"error": "URL не указан"}), 400
+
+    # Only allow bikeinsights.com URLs
+    if "bikeinsights.com" not in url:
+        return jsonify({"error": "Поддерживаются только ссылки с bikeinsights.com"}), 400
+
+    # Fetch the page
+    try:
+        req = urllib.request.Request(
+            url,
+            headers={"User-Agent": "Mozilla/5.0 (compatible; Bikefit/1.0)"},
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            html = resp.read().decode("utf-8", errors="replace")
+    except urllib.error.HTTPError as e:
+        return jsonify({"error": f"Страница недоступна (HTTP {e.code})"}), 502
+    except urllib.error.URLError as e:
+        return jsonify({"error": f"Не удалось загрузить страницу: {e.reason}"}), 502
+    except Exception as e:
+        return jsonify({"error": f"Ошибка при загрузке страницы: {str(e)}"}), 502
+
+    # Parse geometry
+    try:
+        result = parse_bikeinsights_html(html)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 422
+
     return jsonify(result)

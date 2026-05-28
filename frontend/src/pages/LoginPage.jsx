@@ -46,7 +46,7 @@ export default function LoginPage() {
         setError(data.errors.map(e => e.message).join('; '));
       } else {
         setError(data?.error || 'Ошибка входа');
-        // Generic auth failure — highlight both fields without text
+        // Highlight both fields without a per-field message (generic failure)
         setFieldErrors({ username: ' ', password: ' ' });
       }
     } finally {

@@ -5,56 +5,49 @@ from app.models import dao
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
+
 @auth_bp.route("/register", methods=["POST"])
 @handle_errors
 def register():
     data = request.json
     validate_request_data(data)
-    
     result = auth_service.create_user_account(
         data.get("username"),
         data.get("password"),
-        data.get("confirm_password")
+        data.get("confirm_password"),
     )
-    
     if result.get("success"):
         return jsonify(result), 201
-    
     if "errors" in result:
         raise ValidationError(result["errors"])
-    
     return jsonify(result), 400
+
 
 @auth_bp.route("/login", methods=["POST"])
 @handle_errors
 def login():
     data = request.json
     validate_request_data(data)
-    
     result = auth_service.authenticate_user(data.get("username"), data.get("password"))
-    
     if result.get("success"):
         session["user_id"] = result["user"]["id"]
         session["user_role"] = result["user"]["role"]
         session["username"] = result["user"]["username"]
         return jsonify({"success": True, "message": "Авторизация успешна"}), 200
-    
     if "errors" in result:
         raise ValidationError(result["errors"])
-    
     return jsonify(result), 401
 
-@auth_bp.route("/logout", methods=["GET"])
+
+@auth_bp.route("/logout", methods=["POST"])
 @handle_errors
 def logout():
-    session.pop("user_id", None)
-    session.pop("user_role", None)
-    session.pop("username", None)
+    session.clear()
     return jsonify({"success": True, "message": "Выход выполнен"}), 200
+
 
 @auth_bp.route("/me", methods=["GET"])
 def me():
-    """Return current session user info. Used by React SPA to restore auth state on page refresh."""
     user_id = session.get("user_id")
     if not user_id:
         return jsonify({"error": "Not authenticated"}), 401
@@ -62,8 +55,4 @@ def me():
     if not user:
         session.clear()
         return jsonify({"error": "User not found"}), 401
-    return jsonify({
-        "id": user["id"],
-        "username": user["username"],
-        "role": user["role"],
-    }), 200
+    return jsonify({"id": user["id"], "username": user["username"], "role": user["role"]}), 200

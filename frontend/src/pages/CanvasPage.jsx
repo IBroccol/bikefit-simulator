@@ -1,26 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
 import Header from '../components/layout/Header';
 import styles from './CanvasPage.module.css';
 
-/**
- * CanvasPage — wraps the existing Paper.js canvas_interface.js logic.
- *
- * Strategy: the original canvas.js / canvas_interface.js are vanilla JS
- * modules that manipulate the DOM directly via element IDs. We render the
- * exact same DOM structure and then dynamically load Paper.js + canvas.js
- * after the component mounts, passing window.element_ids just like the
- * original Flask template does.
- *
- * This avoids rewriting ~1000 lines of geometry/drawing code.
- */
 export default function CanvasPage() {
-  const navigate = useNavigate();
-  const [toast, setToast] = useState({ msg: '', type: '' });
   const scriptsRef = useRef([]);
 
   useEffect(() => {
-    // Set element IDs for the existing JS modules
     window.element_ids = {
       canvas:        'myCanvas',
       bikeSearch:    'bikeSearch',
@@ -34,7 +19,6 @@ export default function CanvasPage() {
       deleteButton:  'deleteBtn',
     };
 
-    // Load Paper.js first, then canvas.js (which imports canvas_interface.js)
     function loadScript(src, type = 'text/javascript') {
       return new Promise((resolve, reject) => {
         const s = document.createElement('script');
@@ -50,8 +34,6 @@ export default function CanvasPage() {
     async function init() {
       try {
         await loadScript('https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.15/paper-full.min.js');
-        // canvas.js is a module that imports canvas_interface.js etc.
-        // Vite serves static files from /static/ via the proxy to Flask.
         await loadScript('/static/js/canvas.js', 'module');
       } catch (err) {
         console.error('Failed to load canvas scripts', err);
@@ -61,7 +43,6 @@ export default function CanvasPage() {
     init();
 
     return () => {
-      // Cleanup injected scripts on unmount
       scriptsRef.current.forEach(s => {
         if (s.parentNode) s.parentNode.removeChild(s);
       });
@@ -83,9 +64,9 @@ export default function CanvasPage() {
               <label htmlFor="bikeSearch">Поиск велосипеда</label>
               <input
                 type="text"
-                placeholder="Выберите велосипед"
+                placeholder="Начните вводить название"
                 id="bikeSearch"
-                readOnly
+                autoComplete="off"
               />
               <div id="bikeList" className="autocomplete-list" />
             </div>

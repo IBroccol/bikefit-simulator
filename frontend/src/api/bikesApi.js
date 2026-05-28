@@ -1,8 +1,5 @@
 import client from './client';
 
-// All Flask bike endpoints return { success: true, data: ... }
-// These helpers unwrap the .data field automatically.
-
 export const bikesApi = {
   getVisibleBikes: async () => {
     const res = await client.get('/bikes/list');
@@ -20,7 +17,7 @@ export const bikesApi = {
   },
 
   deleteBike: async (bikeId) => {
-    const res = await client.post('/bikes/delete', { bike_id: bikeId });
+    const res = await client.delete('/bikes/delete', { data: { bike_id: bikeId } });
     return res.data;
   },
 
@@ -50,7 +47,7 @@ export const bikesApi = {
   },
 
   setVisibility: async (bikeId, isPublic) => {
-    const res = await client.post('/bikes/set_visibility', { bike_id: bikeId, is_public: isPublic });
+    const res = await client.patch('/bikes/set_visibility', { bike_id: bikeId, is_public: isPublic });
     return res.data;
   },
 

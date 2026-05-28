@@ -20,21 +20,16 @@ export default function MyBikesPage() {
   const [selectedSize, setSelectedSize] = useState(null);
 
   const scriptsRef = useRef([]);
-  // Keep a ref to the current selected bike so the async size handler can read it
   const selectedBikeRef = useRef(null);
 
   useEffect(() => {
     loadBikes();
   }, []);
 
-  // Keep ref in sync with state
   useEffect(() => {
     selectedBikeRef.current = selectedBike;
   }, [selectedBike]);
 
-  // Load Paper.js + canvas_drawer.js once on mount.
-  // We expose a global drawBikePreview(sizeId) function that the React
-  // size-button handler calls after selecting a size.
   useEffect(() => {
     function loadScript(src, type = 'text/javascript') {
       return new Promise((resolve, reject) => {
@@ -52,7 +47,6 @@ export default function MyBikesPage() {
       try {
         await loadScript('https://unpkg.com/paper@0.12.15/dist/paper-full.min.js');
 
-        // Inline module: import Drawer and expose a global helper
         const inlineScript = document.createElement('script');
         inlineScript.type = 'module';
         inlineScript.textContent = `
@@ -80,7 +74,6 @@ export default function MyBikesPage() {
 
               const geo = result.data;
 
-              // Re-create Drawer each time so Paper.js scope is fresh
               if (_drawer) {
                 try { _drawer.clearCanvas(); } catch(e) {}
               }
@@ -126,7 +119,6 @@ export default function MyBikesPage() {
     setSelectedBike(bike);
     setSelectedSize(null);
     setSizes([]);
-    // Clear the canvas when switching bikes
     if (window.__myBikesClearCanvas) window.__myBikesClearCanvas();
     try {
       const data = await bikesApi.getSizes(bike.id);

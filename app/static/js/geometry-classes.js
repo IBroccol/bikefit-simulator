@@ -711,27 +711,32 @@ export class ArcThrough3Points extends Figure {
 
         const projected = center.add(vec.normalize(radius));
 
-        // проверяем, попадает ли проекция в дугу
+        // Угол точки относительно центра окружности
         const ang = (pt) => Math.atan2(pt.y - center.y, pt.x - center.x);
-        let a1 = ang(this.p1),
-            a2 = ang(this.p2),
-            a3 = ang(this.p3),
-            ap = ang(projected);
+        const a1 = ang(this.p1);
+        const a2 = ang(this.p2);
+        const a3 = ang(this.p3);
+        const ap = ang(projected);
 
-        // нормализация углов
-        const norm = (x) => (x < 0 ? x + 2 * Math.PI : x);
-        a1 = norm(a1);
-        a2 = norm(a2);
-        a3 = norm(a3);
-        ap = norm(ap);
-
-        // определить порядок обхода через p2
-        const between = (start, mid, end) => {
-            if (start <= end) return start <= mid && mid <= end;
-            return start <= mid || mid <= end;
+        // Нормализует угол b относительно a в диапазон [0, 2π)
+        // чтобы можно было сравнивать углы в одном направлении обхода
+        const normFrom = (a, b) => {
+            let d = b - a;
+            while (d < 0) d += 2 * Math.PI;
+            while (d >= 2 * Math.PI) d -= 2 * Math.PI;
+            return d;
         };
 
-        let inArc = between(a1, ap, a3) === between(a1, a2, a3);
+        // Определяем направление обхода дуги p1→p2→p3:
+        // d12 = угол от p1 до p2, d13 = угол от p1 до p3 (оба в [0, 2π))
+        // Если d12 < d13 — обход CCW (против часовой), иначе CW (по часовой)
+        const d12 = normFrom(a1, a2);
+        const d13 = normFrom(a1, a3);
+        const dp  = normFrom(a1, ap);
+
+        // ap лежит на дуге p1→p2→p3 тогда и только тогда,
+        // когда dp находится между 0 и d13 в том же направлении что d12
+        const inArc = (d12 <= d13) ? (dp <= d13) : (dp >= d13);
 
         if (inArc) {
             return projected;

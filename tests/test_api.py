@@ -10,6 +10,11 @@ Notes on actual Flask behavior:
 - /fits/save returns 201 on success
 - /fits/get_anthropometry returns 404 when no data exists
 - /bikes/add validator checks numeric ranges but not model/size presence
+- /auth/logout is now POST (was GET)
+- /bikes/delete is now DELETE method
+- /bikes/set_visibility is now PATCH method
+- /fits/get now requires authentication
+- /bikes/sizes and /bikes/geometry now require authentication
 """
 import json
 import pytest
@@ -130,25 +135,32 @@ class TestLogin:
 
 
 # ===========================================================================
-# Auth — /auth/logout
+# Auth — /auth/logout  (now POST)
 # ===========================================================================
 
 class TestLogout:
     def test_logout_success(self, auth_client):
-        rv = auth_client.get('/auth/logout')
+        rv = auth_client.post('/auth/logout')
         assert rv.status_code == 200
         data = rv.get_json()
         assert data['success'] is True
 
     def test_logout_clears_session(self, auth_client):
-        auth_client.get('/auth/logout')
+        auth_client.post('/auth/logout')
         # After logout, /auth/me should return 401
         rv = auth_client.get('/auth/me')
         assert rv.status_code == 401
 
+    def test_logout_get_not_allowed(self, auth_client):
+        # GET is no longer a valid method for logout.
+        # Flask may return 404 (SPA catch-all) or 405 (Method Not Allowed)
+        # depending on whether the SPA catch-all intercepts the request first.
+        rv = auth_client.get('/auth/logout')
+        assert rv.status_code in (404, 405)
+
 
 # ===========================================================================
-# Auth — /auth/me  (new endpoint)
+# Auth — /auth/me
 # ===========================================================================
 
 class TestMe:
@@ -178,8 +190,7 @@ class TestBikesAdd:
 
     def test_add_bike_unauthenticated(self, client):
         rv = client.post('/bikes/add', json=[VALID_BIKE])
-        # @auth_required redirects unauthenticated requests (302)
-        assert rv.status_code in (302, 401, 403)
+        assert rv.status_code in (401, 403)
 
     def test_add_bike_invalid_geometry_range(self, auth_client):
         # stack value below minimum (400) should fail validation
@@ -223,18 +234,18 @@ class TestBikesList:
         assert data['data'][0]['model'] == VALID_BIKE['model']
 
     def test_list_bikes_unauthenticated(self, client):
-        # /bikes/list is @auth_required — redirects unauthenticated users
+        # /bikes/list is public — returns 200 with empty list
         rv = client.get('/bikes/list')
-        assert rv.status_code in (200, 302, 401)
+        assert rv.status_code == 200
 
     def test_user_bikes_unauthenticated(self, client):
-        # @auth_required redirects unauthenticated requests (302)
+        # @auth_required returns 401 for unauthenticated requests
         rv = client.get('/bikes/user_bikes')
-        assert rv.status_code in (302, 401, 403)
+        assert rv.status_code in (401, 403)
 
 
 # ===========================================================================
-# Bikes — /bikes/sizes
+# Bikes — /bikes/sizes  (now requires auth)
 # ===========================================================================
 
 class TestBikesSizes:
@@ -251,9 +262,18 @@ class TestBikesSizes:
         assert len(data['data']) == 1
         assert data['data'][0]['size'] == VALID_BIKE['size']
 
+    def test_get_sizes_unauthenticated(self, client):
+        rv = client.post('/bikes/sizes', json={'bike_model_id': 1})
+        assert rv.status_code in (401, 403)
+
+    def test_get_sizes_inaccessible_model(self, auth_client):
+        # Requesting a non-existent / inaccessible model should return 404
+        rv = auth_client.post('/bikes/sizes', json={'bike_model_id': 99999})
+        assert rv.status_code == 404
+
 
 # ===========================================================================
-# Bikes — /bikes/delete
+# Bikes — /bikes/delete  (now DELETE method)
 # ===========================================================================
 
 class TestBikesDelete:
@@ -262,7 +282,7 @@ class TestBikesDelete:
         bikes_rv = auth_client.get('/bikes/user_bikes')
         bike_id = bikes_rv.get_json()['data'][0]['id']
 
-        rv = auth_client.post('/bikes/delete', json={'bike_id': bike_id})
+        rv = auth_client.delete('/bikes/delete', json={'bike_id': bike_id})
         assert rv.status_code == 200
         data = rv.get_json()
         assert data['success'] is True
@@ -272,9 +292,20 @@ class TestBikesDelete:
         assert bikes_rv2.get_json()['data'] == []
 
     def test_delete_bike_unauthenticated(self, client):
-        # @auth_required redirects unauthenticated requests (302)
-        rv = client.post('/bikes/delete', json={'bike_id': 1})
-        assert rv.status_code in (302, 401, 403)
+        rv = client.delete('/bikes/delete', json={'bike_id': 1})
+        assert rv.status_code in (401, 403)
+
+    def test_delete_nonexistent_bike(self, auth_client):
+        # Deleting a bike that doesn't exist should return failure
+        rv = auth_client.delete('/bikes/delete', json={'bike_id': 99999})
+        assert rv.status_code == 200
+        data = rv.get_json()
+        assert data.get('success') is False
+
+    def test_delete_post_not_allowed(self, auth_client):
+        # POST is no longer valid for delete
+        rv = auth_client.post('/bikes/delete', json={'bike_id': 1})
+        assert rv.status_code == 405
 
 
 # ===========================================================================
@@ -305,9 +336,8 @@ class TestAnthropometry:
         assert data.get('success') is False
 
     def test_add_anthropometry_unauthenticated(self, client):
-        # @auth_required redirects unauthenticated requests (302)
         rv = client.post('/fits/add_anthropometry', json=VALID_ANTHRO)
-        assert rv.status_code in (302, 401, 403)
+        assert rv.status_code in (401, 403)
 
     def test_add_anthropometry_missing_field(self, auth_client):
         bad = {k: v for k, v in VALID_ANTHRO.items() if k != 'height'}
@@ -370,6 +400,10 @@ class TestFits:
         assert 'My fit' in data['data']
 
     def test_save_fit_unauthenticated(self, client):
-        # @auth_required redirects unauthenticated requests (302)
         rv = client.post('/fits/save', json={'name': 'x', 'size_id': 1})
-        assert rv.status_code in (302, 401, 403)
+        assert rv.status_code in (401, 403)
+
+    def test_get_fit_unauthenticated(self, client):
+        # /fits/get now requires authentication
+        rv = client.post('/fits/get', json={'fit_name': 'x', 'size_id': 1})
+        assert rv.status_code in (401, 403)

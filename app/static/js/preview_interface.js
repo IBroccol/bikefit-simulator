@@ -13,14 +13,7 @@ export class InterfacePreview {
         this.setupEventListeners();
     }
 
-    setupEventListeners() {
-        // Выбор размера велосипеда
-        // this.sizeSelect.addEventListener("change", async() => {
-        //     const size = this.sizeSelect.value;
-        //     if (!this.cur_bike_id || !size) return;
-        //     await this.onSizeChoice(size);
-        // });
-    }
+    setupEventListeners() {}
 
     async fetchSizes(bike_model_id) {
         try {
@@ -71,16 +64,6 @@ export class InterfacePreview {
             });
 
             sizeContainer.appendChild(btn);
-        });
-    }
-
-    renderSizeOptions(sizes) {
-        this.sizeSelect.innerHTML = `<option value="">Выберите размер...</option>`;
-        sizes.forEach(size => {
-            const opt = document.createElement("option");
-            opt.value = size;
-            opt.textContent = size;
-            this.sizeSelect.appendChild(opt);
         });
     }
 

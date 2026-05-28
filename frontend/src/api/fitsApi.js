@@ -1,8 +1,5 @@
 import client from './client';
 
-// Flask fits endpoints return { success: true, data: ... } wrappers.
-// These helpers unwrap .data automatically where applicable.
-
 export const fitsApi = {
   saveFit: async (data) => {
     const res = await client.post('/fits/save', data);

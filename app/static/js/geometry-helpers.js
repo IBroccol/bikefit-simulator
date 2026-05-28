@@ -122,9 +122,3 @@ export function middle_perpendicular(scope, p1, p2) {
     let point1 = new Point({ scope: scope, x: (p1.x + p2.x) / 2 - 0.1 * (p2.y - p1.y), y: (p1.y + p2.y) / 2 + 0.1 * (p2.x - p1.x), dependencies: [circle0, circle1], visible: false })
     return new Line({ scope: scope, p1: point0, p2: point1, visible: false })
 }
-
-export function middle(scope, p1, p2) {
-    let line0 = middle_perpendicular(p1, p2)
-    let line1 = new Line({ scope: scope, p1: p1, p2: p2, visible: false })
-    return new Point({ scope: scope, x: 0, y: 0, dependencies: [line0, line1] })
-}

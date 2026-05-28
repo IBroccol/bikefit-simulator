@@ -5,7 +5,6 @@ import Header from '../components/layout/Header';
 import { ErrorMessage, SuccessMessage } from '../components/ui/ErrorMessage';
 import styles from './AddBikePage.module.css';
 
-// Parameters shared across all sizes (single value)
 const SHARED_PARAMS = [
   { name: 'rimD',          label: 'Диаметр обода, мм',                          required: false, hint: 'rimD',         placeholder: '622' },
   { name: 'tyreW',         label: 'Ширина покрышек, мм',                         required: false, hint: 'tyreW',        placeholder: '25' },
@@ -22,7 +21,6 @@ const SHARED_PARAMS = [
   { name: 'maxseatpostLen',label: 'Макс. высота установки подседельного штыря, мм', required: false, hint: 'maxseatpostLen', placeholder: '250' },
 ];
 
-// Parameters per size column
 const PER_SIZE_PARAMS = [
   { section: 'Геометрия рамы' },
   { name: 'seatTube',  label: 'Длина подседельной трубы, мм',  required: true,  hint: 'seatTube' },
@@ -52,7 +50,6 @@ function makeEmptyShared() {
   return vals;
 }
 
-/** Returns true if the cell should be highlighted red */
 function isCellInvalid(value, required, submitted) {
   if (!submitted) return false;
   if (required && !String(value).trim()) return true;
@@ -68,14 +65,9 @@ export default function AddBikePage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
-  // submitted flag: turns on red highlighting after first submit attempt
   const [submitted, setSubmitted] = useState(false);
-  // Server-side field errors: per-size cell errors and shared param errors
-  // serverCellErrors: { [sizeIdx]: { [paramName]: message } }
   const [serverCellErrors, setServerCellErrors] = useState({});
-  // serverSharedErrors: { [paramName]: message }
   const [serverSharedErrors, setServerSharedErrors] = useState({});
-  // URL import state
   const [importUrl, setImportUrl] = useState('');
   const [importing, setImporting] = useState(false);
   const [importSuccess, setImportSuccess] = useState('');
@@ -89,12 +81,10 @@ export default function AddBikePage() {
 
     try {
       const data = await bikesApi.parseUrl(importUrl.trim());
-      // data: { model: "...", sizes: [ { label, stack, reach, seatTube, crankLen, stemLen, rimD, tyreW, ... } ] }
 
       if (data.model) setModel(data.model);
 
       if (data.sizes?.length) {
-        // Fill per-size params (geometry + crankLen + stemLen)
         const newSizes = data.sizes.map(s => {
           const vals = {};
           PER_SIZE_PARAMS.forEach(p => {
@@ -105,7 +95,6 @@ export default function AddBikePage() {
         });
         setSizes(newSizes);
 
-        // Fill shared params from the first size (rimD, tyreW, stemAngle are same for all sizes)
         const first = data.sizes[0];
         setShared(prev => {
           const next = { ...prev };
@@ -144,7 +133,6 @@ export default function AddBikePage() {
     setSizes(prev => prev.map((s, i) =>
       i === idx ? { ...s, values: { ...s.values, [param]: val } } : s
     ));
-    // Clear server error for this cell
     setServerCellErrors(prev => {
       if (!prev[idx]?.[param]) return prev;
       const next = { ...prev, [idx]: { ...prev[idx] } };
@@ -155,7 +143,6 @@ export default function AddBikePage() {
 
   function updateShared(param, val) {
     setShared(prev => ({ ...prev, [param]: val }));
-    // Clear server error for this shared param
     setServerSharedErrors(prev => {
       if (!prev[param]) return prev;
       const next = { ...prev };
@@ -175,12 +162,10 @@ export default function AddBikePage() {
     if (!model.trim()) { setError('Введите модель велосипеда'); return; }
     if (sizes.length === 0) { setError('Добавьте хотя бы один размер'); return; }
 
-    // Validate size labels unique & non-empty
     const labels = sizes.map(s => s.label.trim());
     if (labels.some(l => !l)) { setError('Укажите название для каждого размера'); return; }
     if (new Set(labels).size !== labels.length) { setError('Размеры должны быть уникальными'); return; }
 
-    // Validate required per-size params
     const requiredPerSize = PER_SIZE_PARAMS.filter(p => p.name && p.required).map(p => p.name);
     for (const s of sizes) {
       for (const name of requiredPerSize) {
@@ -191,7 +176,6 @@ export default function AddBikePage() {
       }
     }
 
-    // Validate required shared params
     const requiredShared = SHARED_PARAMS.filter(p => p.required).map(p => p.name);
     for (const name of requiredShared) {
       if (!String(shared[name]).trim()) {
@@ -200,7 +184,6 @@ export default function AddBikePage() {
       }
     }
 
-    // Build payload: one bike object per size
     const bikes = sizes.map(s => {
       const bike = { model: model.trim(), size: s.label.trim() };
       SHARED_PARAMS.forEach(p => {
@@ -223,23 +206,20 @@ export default function AddBikePage() {
     } catch (err) {
       const data = err.response?.data;
       if (data?.errors?.length) {
-        // Parse server field names: "param" → size idx 0, "param_1" → idx 1, etc.
-        // Shared params (rimD, tyreW, etc.) never have an index suffix.
         const sharedParamNames = new Set(SHARED_PARAMS.map(p => p.name));
-        const cellErrs = {};   // { [sizeIdx]: { [paramName]: message } }
-        const sharedErrs = {}; // { [paramName]: message }
+        const cellErrs = {};
+        const sharedErrs = {};
 
         data.errors.forEach(e => {
           if (!e.field) return;
           const field = e.field;
 
-          // Check if it's a shared param (no index suffix)
           if (sharedParamNames.has(field)) {
             sharedErrs[field] = e.message;
             return;
           }
 
-          // Try to parse "paramName_idx" pattern
+          // "paramName_idx" → per-size error; no suffix → size 0
           const match = field.match(/^(.+?)_(\d+)$/);
           if (match) {
             const paramName = match[1];
@@ -247,7 +227,6 @@ export default function AddBikePage() {
             if (!cellErrs[idx]) cellErrs[idx] = {};
             cellErrs[idx][paramName] = e.message;
           } else {
-            // No suffix → size index 0
             if (!cellErrs[0]) cellErrs[0] = {};
             cellErrs[0][field] = e.message;
           }

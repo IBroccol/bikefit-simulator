@@ -12,13 +12,12 @@ export const authApi = {
   },
 
   logout: async () => {
-    const res = await client.get('/auth/logout');
+    const res = await client.post('/auth/logout');
     return res.data;
   },
 
   me: async () => {
     const res = await client.get('/auth/me');
-    // /auth/me returns the user object directly (not wrapped in { user: ... })
     return res.data;
   },
 };

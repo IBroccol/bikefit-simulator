@@ -9,11 +9,9 @@ client.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
-      // Don't redirect for auth endpoints — 401 there is an expected response
-      // (wrong credentials or unauthenticated check), not a session expiry.
+      // Auth endpoints return 401 for wrong credentials — don't redirect there.
       const url = err.config?.url || '';
-      const isAuthEndpoint = url.includes('/auth/');
-      if (!isAuthEndpoint) {
+      if (!url.includes('/auth/')) {
         window.location.href = '/';
       }
     }

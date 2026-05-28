@@ -21,7 +21,6 @@ import {
     parallel,
     angled_line,
     middle_perpendicular,
-    middle,
     distance,
 } from './geometry-helpers.js';
 
@@ -85,20 +84,46 @@ export class Drawer {
         this.width = rect.width;
         this.height = rect.height;
         this.scale = Math.min(this.width / 2000, this.height / 1750);
-        Figure.MAXSTEP = MAXSTEP * this.scale
+        Figure.MAXSTEP = MAXSTEP * this.scale;
     }
 
     scaleData() {
         this.GEOMETRY = structuredClone(this.INIT_GEOMETRY)
         this.ANTROPOMETRICS = structuredClone(this.INIT_ANTROPOMETRICS)
-        this.FIT = structuredClone(this.INIT_FIT)
 
-        for (let DATA of[this.GEOMETRY, this.ANTROPOMETRICS, this.FIT]) {
+        // Geometry and anthropometry values from the server are PostgreSQL NUMERIC,
+        // serialized as strings. Convert all numeric-looking values to floats first
+        // so that arithmetic (especially +) works correctly throughout the drawer.
+        for (let DATA of [this.GEOMETRY, this.ANTROPOMETRICS]) {
+            if (!DATA) continue;
+            for (const key in DATA) {
+                const v = DATA[key];
+                if (typeof v === 'string' && v !== '' && !isNaN(v)) {
+                    DATA[key] = parseFloat(v);
+                }
+            }
+        }
+
+        // When no fit data is available (no anthropometry), use geometry-based defaults
+        // so the bike frame renders correctly without a rider overlay
+        if (this.INIT_FIT) {
+            this.FIT = structuredClone(this.INIT_FIT)
+        } else {
+            this.FIT = {
+                seatHight:    this.GEOMETRY['seatTube'] + (this.GEOMETRY['minseatpostLen'] + this.GEOMETRY['maxseatpostLen']) / 2,
+                stemHight:    this.GEOMETRY['maxStemHight'],
+                shifterAngle: 45,
+                saddleOffset: 0,
+                torsoAngle:   45,
+            }
+        }
+
+        for (let DATA of [this.GEOMETRY, this.ANTROPOMETRICS, this.FIT]) {
+            if (!DATA) continue;
             for (var key in DATA) {
                 if (!(key.endsWith('Angle'))) {
                     DATA[key] *= this.scale;
                 }
-
             }
         }
     }
@@ -219,10 +244,6 @@ export class Drawer {
         this.bike.Saddle = new Point({ scope: this.scope, x: point2.x + this.FIT['saddleOffset'], y: point2.y, dependencies: [this.bike.SaddleRange], moveable: true })
 
         circle0 = new Circle({ scope: this.scope, center: this.bike.Saddle, radius: this.GEOMETRY['saddleLen'] / 2, visible: false })
-            // point0 = new Point({ scope: this.scope,  x: 0, y: 0, dependencies: [circle0], visible: false })
-            // arc0 = new Arc({ scope: this.scope,  center: Saddle, point: point0, fromAngle: 10, toAngle: -10, visible: false })
-            // let SaddleNose = new Point({ scope: this.scope,  x: Saddle.x + Math.cos(FIT['saddleAngle'] / 180 * Math.PI), y: Saddle.y - Math.sin(FIT['saddleAngle'] / 180 * Math.PI), dependencies: [circle0], moveable: true })
-            // let SaddleLine = new Line({ scope: this.scope,  p1: SaddleNose, p2: Saddle, visible: false })
         this.bike.SaddleLine = h_line(this.scope, this.bike.Saddle, false)
         this.bike.SaddleNose = new Point({ scope: this.scope, x: inf, y: 0, dependencies: [circle0, this.bike.SaddleLine], visible: false })
         this.bike.SaddleBack = new Point({ scope: this.scope, x: 0, y: 0, dependencies: [circle0, this.bike.SaddleLine], visible: false })
@@ -251,7 +272,6 @@ export class Drawer {
         this.bike.SteererRange = new Segment({ scope: this.scope, p1: point1, p2: point0, visible: false })
         point0 = new Point({ scope: this.scope, x: this.bike.TopTube.p1.x - this.FIT['stemHight'] * Math.cos(this.GEOMETRY['headAngle'] / 180 * Math.PI), y: this.bike.TopTube.p1.y - this.FIT['stemHight'] * Math.sin(this.GEOMETRY['headAngle'] / 180 * Math.PI), dependencies: [this.bike.SteererRange], moveable: true })
         this.bike.StemLine = angled_line(this.scope, this.bike.TopTube.p1, point0, 90 - this.GEOMETRY['stemAngle'], false)
-        console.log(90 - this.GEOMETRY['stemAngle'])
         circle0 = new Circle({ scope: this.scope, center: point0, radius: this.GEOMETRY['stemLen'], visible: false })
         point1 = new Point({ scope: this.scope, x: inf, y: 0, dependencies: [this.bike.StemLine, circle0], visible: false })
         this.bike.Stem = new Segment({ scope: this.scope, p1: point0, p2: point1 })
@@ -350,10 +370,6 @@ export class Drawer {
         let circle0 = new Circle({ scope: this.scope, center: PedalSpindel, radius: this.ANTROPOMETRICS['soleHight'], visible: false })
         let Metatarsal = new Point({ scope: this.scope, x: 0, y: 0, dependencies: [circle0, line0], visible: false })
 
-        // let Metatarsal = new Point({ scope: this.scope,  x: PedalSpindel.x, y: PedalSpindel.y - ANTROPOMETRICS['soleHight'], dependencies: [PedalSpindel], visible: false })
-
-        // let FootLine = new Line({ scope: this.scope,  p1: KinematicPoint, p2: Metatarsal, visible: false })
-        // let ToesLine = h_line(this.scope, Metatarsal, false)
         let ToesLine = new Line({ scope: this.scope, p1: KinematicPoint, p2: Metatarsal, visible: false })
         let FootLine = angled_line(this.scope, KinematicPoint, Metatarsal, -(180 - 15), false)
 
@@ -400,15 +416,13 @@ export class Drawer {
 
         let TorsoMin = new Point({ scope: this.scope, x: this.rider.HipJoint.x + this.ANTROPOMETRICS['torsoMin'] * Math.cos(this.ANTROPOMETRICS['torsoMinAngle'] / 180 * Math.PI), y: this.rider.HipJoint.y - this.ANTROPOMETRICS['torsoMin'] * Math.sin(this.ANTROPOMETRICS['torsoMinAngle'] / 180 * Math.PI), dependencies: [this.rider.HipJoint], visible: false })
 
-        // let ShoulderRange = new ArcThrough3Points({ scope: this.scope,  p1: TorsoMin, p2: TorsoMid, p3: TorsoMax, visible: false })
-
         var center_pos = ArcThrough3Points._circumcenter(this.scope, TorsoMin, TorsoMid, TorsoMax)
         let arc_center = new Point({ scope: this.scope, x: center_pos.x, y: center_pos.y, dependencies: [this.rider.HipJoint], visible: false })
 
         let shoulderCircle = new Circle({ scope: this.scope, center: arc_center, radius: distance(arc_center, TorsoMid), visible: false })
 
         let circle0 = new Circle({ scope: this.scope, center: this.rider.Hands, radius: (this.ANTROPOMETRICS['upperarm'] + this.ANTROPOMETRICS['forearm'] * 1.2) * 0.999, visible: false })
-        let TorsoMaxValid = new Point({ scope: this.scope, x: 0, y: 0, dependencies: [circle0, shoulderCircle], visible: false })
+        let TorsoMaxValid = new Point({ scope: this.scope, x:  inf, y: 0, dependencies: [circle0, shoulderCircle], visible: false })
         let temp = middle_perpendicular(this.scope, TorsoMaxValid, TorsoMin)
         let TorsoMidValid = new Point({ scope: this.scope, x: inf, y: temp.y, dependencies: [shoulderCircle, temp], visible: false })
         this.rider.ShoulderRange = new ArcThrough3Points({ scope: this.scope, p1: TorsoMaxValid, p2: TorsoMidValid, p3: TorsoMin, visible: false })

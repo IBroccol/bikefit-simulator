@@ -31,9 +31,15 @@ export class Interface {
         this.resetButton.addEventListener("click", () => this.drawer.reset());
         this.deleteButton.addEventListener("click", () => this.deleteFit());
 
-        this.bikeSearch.addEventListener("focus", async() => {
-            // const savedBikes = await this.fetchBikes();
-            this.renderAutocompleteList(this.bikeList, this.savedBikes, this.bikeSearch, this.onBikeChoise.bind(this));
+        this.bikeSearch.addEventListener("input", () => {
+            const query = this.bikeSearch.value.trim().toLowerCase();
+            const filtered = this._filterBikes(query);
+            this.renderAutocompleteList(this.bikeList, filtered, this.bikeSearch, this.onBikeChoise.bind(this));
+        });
+        this.bikeSearch.addEventListener("focus", () => {
+            const query = this.bikeSearch.value.trim().toLowerCase();
+            const filtered = this._filterBikes(query);
+            this.renderAutocompleteList(this.bikeList, filtered, this.bikeSearch, this.onBikeChoise.bind(this));
         });
         this.setupAutocompleteHide(this.bikeList, this.bikeSearch);
 
@@ -115,6 +121,15 @@ export class Interface {
         this.drawer.draw()
     }
 
+    _filterBikes(query) {
+        const keys = Object.keys(this.savedBikes || {});
+        if (!query) return keys;
+        const q = query.toLowerCase();
+        const prefix = keys.filter(k => k.toLowerCase().startsWith(q));
+        const rest   = keys.filter(k => !k.toLowerCase().startsWith(q) && k.toLowerCase().includes(q));
+        return [...prefix, ...rest];
+    }
+
     async fetchBikes() {
         try {
             const response = await fetch('/bikes/list', {
@@ -128,7 +143,6 @@ export class Interface {
             }
 
             const data = await response.json();
-            // Создаем словарь с ключом bike.model и значением bike.id
             this.savedBikes = {};
             data.data.forEach(bike => {
                 this.savedBikes[bike.model] = bike.id;
@@ -172,7 +186,6 @@ export class Interface {
 
     renderAutocompleteList(list, items, input, click_fun) {
         list.innerHTML = "";
-        // Если items - это словарь, получаем ключи для отображения
         const itemKeys = Array.isArray(items) ? items : Object.keys(items);
         itemKeys.forEach(item => {
             const listItem = document.createElement("div");
@@ -209,8 +222,6 @@ export class Interface {
 
         const fitSettings = this.getFitSettings();
         fitSettings.name = name;
-
-        //console.log(fitSettings)
 
         try {
             const response = await fetch("/fits/save", {
@@ -303,19 +314,21 @@ export class Interface {
 
             if (!response.ok) {
                 const error = await response.json();
-                throw new Error(error.error || 'Ошибка при получении данных');
+                console.warn('Базовая посадка недоступна:', error.error || response.status);
+                return null;
             }
 
             const result = await response.json();
             if (!result.success) {
-                throw new Error(result.error || 'Ошибка при получении данных');
+                console.warn('Базовая посадка недоступна:', result.error);
+                return null;
             }
 
-            return result.data;
+            // data may be null if anthropometry is not set — bike draws without fit overlay
+            return result.data ?? null;
         } catch (error) {
-            console.error('Ошибка:', error);
-            this.showError('Не удалось загрузить базовую посадку: ' + error.message);
-            throw error;
+            console.error('Ошибка при загрузке базовой посадки:', error);
+            return null;
         }
     }
 
@@ -368,8 +381,6 @@ export class Interface {
                 this.fitSearch.value = "";
                 this.cur_fit_name = null;
                 this.deleteButton.style.display = "none";
-                
-                // Reset to basic fit
                 this.drawer.INIT_FIT = await this.getBasicFitData(this.cur_size_id);
                 this.drawer.draw();
             } else {
@@ -403,12 +414,8 @@ export class Interface {
                 throw new Error(result.error || 'Ошибка при получении данных');
             }
 
-            // Проверяем, не вернул ли запрос пустой ответ
             if (!result.data || Object.keys(result.data).length === 0) {
-                // Показываем всплывающее окно с просьбой ввести антропометрию
                 this.showError("Пожалуйста, введите ваши параметры перед настройкой посадки. Вы будете перенаправлены на страницу через 3 секунды.");
-
-                // Перенаправляем на страницу настроек антропометрии через 3 секунды
                 setTimeout(() => {
                     window.location.href = '/anthropometry';
                 }, 3000);
@@ -439,7 +446,6 @@ export class Interface {
     }
 
     showError(message) {
-        // Создаем или находим контейнер для ошибок
         let errorContainer = document.getElementById('error-container');
         if (!errorContainer) {
             errorContainer = document.createElement('div');
@@ -463,15 +469,12 @@ export class Interface {
 
         errorContainer.textContent = message;
         errorContainer.style.display = 'block';
-
-        // Автоматически скрываем через 5 секунд
         setTimeout(() => {
             errorContainer.style.display = 'none';
         }, 5000);
     }
 
     showSuccess(message) {
-        // Создаем или находим контейнер для успехов
         let successContainer = document.getElementById('success-container');
         if (!successContainer) {
             successContainer = document.createElement('div');
@@ -495,8 +498,6 @@ export class Interface {
 
         successContainer.textContent = message;
         successContainer.style.display = 'block';
-
-        // Автоматически скрываем через 3 секунды
         setTimeout(() => {
             successContainer.style.display = 'none';
         }, 3000);

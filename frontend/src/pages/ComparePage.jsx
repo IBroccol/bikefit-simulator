@@ -2,10 +2,6 @@ import { useEffect, useRef } from 'react';
 import Header from '../components/layout/Header';
 import styles from './ComparePage.module.css';
 
-/**
- * ComparePage — wraps canvas_compare.js using the same script-injection
- * strategy as CanvasPage. Two independent Paper.js canvases side by side.
- */
 export default function ComparePage() {
   const scriptsRef = useRef([]);
 
@@ -105,7 +101,7 @@ export default function ComparePage() {
             <div className={styles.controls}>
               <div className="input-group">
                 <label htmlFor={p.bikeSearch}>Велосипед</label>
-                <input type="text" placeholder="Выберите модель" id={p.bikeSearch} readOnly />
+                <input type="text" placeholder="Начните вводить название" id={p.bikeSearch} autoComplete="off" />
                 <div id={p.bikeList} className="autocomplete-list" />
               </div>
 

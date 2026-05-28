@@ -5,7 +5,6 @@ async function init() {
     const bikesContainer = document.getElementById("pending-bikes");
     const sizeButtonsContainer = document.getElementById("size-buttons");
 
-    // === Получение списка велосипедов ===
     async function fetchBikes() {
         try {
             const response = await fetch("/bikes/pending");
@@ -40,7 +39,6 @@ async function init() {
                     </div>
                 `;
 
-                // кнопки одобрения/отклонения
                 item.querySelectorAll("button").forEach(btn => {
                     btn.addEventListener("click", async(e) => {
                         e.stopPropagation();
@@ -49,9 +47,7 @@ async function init() {
                     });
                 });
 
-                // выбор велосипеда
                 item.addEventListener("click", () => onBikeSelect(item, bike));
-
                 bikesContainer.appendChild(item);
             });
         } catch (err) {
@@ -59,11 +55,10 @@ async function init() {
         }
     }
 
-    // === Обновление статуса велосипеда ===
     async function updatePrivacy(bike_id, is_public) {
         try {
             const response = await fetch("/bikes/set_visibility", {
-                method: "POST",
+                method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
                 body: JSON.stringify({ bike_id, is_public })
@@ -79,24 +74,22 @@ async function init() {
         }
     }
 
-    // === Обработка выбора велосипеда ===
     async function onBikeSelect(item, bike) {
-        ui.cur_bike_model = bike.model
+        ui.cur_bike_model = bike.model;
         ui.drawer.clearCanvas();
         document.querySelectorAll(".bike-item").forEach(b => b.classList.remove("active"));
         item.classList.add("active");
 
-        // удаляем старые кнопки размеров
         sizeButtonsContainer.innerHTML = "";
 
-        // получаем размеры для выбранной модели
         try {
             const response = await fetch("/bikes/sizes", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
+                credentials: "include",
                 body: JSON.stringify({ bike_model_id: bike.id })
             });
-            if (!response.ok) throw new Error("Ошибка при получении размеров");
+            if (!response.ok) throw new Error();
             const result = await response.json();
             const sizes = result.success ? result.data : [];
 
@@ -105,24 +98,21 @@ async function init() {
                 btn.className = "btn btn-secondary size-btn";
                 btn.textContent = sizeObj.size;
                 btn.addEventListener("click", async() => {
-                    // снимаем активность со всех кнопок
                     sizeButtonsContainer.querySelectorAll(".size-btn").forEach(b => {
                         b.classList.remove("btn-primary");
                         b.classList.add("btn-secondary");
                     });
                     btn.classList.remove("btn-secondary");
                     btn.classList.add("btn-primary");
-                    // вызываем preview для выбранного размера
                     await ui.onSizeChoice(sizeObj.size);
                 });
                 sizeButtonsContainer.appendChild(btn);
             });
         } catch (err) {
-            // Silently handle error
+            // size fetch failed — leave buttons empty
         }
     }
 
-    // === Инициализация ===
     await fetchBikes();
 }
 

@@ -2,11 +2,6 @@ import { useEffect, useRef } from 'react';
 import Header from '../components/layout/Header';
 import styles from './ModerationPage.module.css';
 
-/**
- * ModerationPage — wraps moderation.js using the same script-injection
- * strategy as CanvasPage / MyBikesPage. The existing moderation.js handles
- * fetching pending bikes, rendering the list, and approving/rejecting them.
- */
 export default function ModerationPage() {
   const scriptsRef = useRef([]);
 

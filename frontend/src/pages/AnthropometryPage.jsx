@@ -47,10 +47,8 @@ export default function AnthropometryPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  // fieldErrors: { [name]: errorMessage }
   const [fieldErrors, setFieldErrors] = useState({});
 
-  // Load existing anthropometry on mount
   useEffect(() => {
     fitsApi.getAnthropometry()
       .then(data => {
@@ -70,7 +68,6 @@ export default function AnthropometryPage() {
 
   function handleChange(name, val) {
     setValues(prev => ({ ...prev, [name]: val }));
-    // Clear error for this field as soon as user types
     if (fieldErrors[name]) {
       setFieldErrors(prev => {
         const next = { ...prev };
@@ -85,7 +82,6 @@ export default function AnthropometryPage() {
     setError('');
     setSuccess('');
 
-    // Validate: all fields required and must be positive numbers
     const errs = {};
     ALL_NAMES.forEach(n => {
       const v = values[n].trim();

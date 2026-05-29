@@ -1,5 +1,6 @@
 from functools import wraps
 from flask import jsonify
+from werkzeug.exceptions import HTTPException
 import logging
 from typing import Dict, Any, Optional, List
 
@@ -69,6 +70,8 @@ def handle_errors(func):
             return jsonify(_format_error(e)), 500
         except AppError as e:
             return jsonify(_format_error(e)), e.status_code
+        except HTTPException as e:
+            return jsonify({"success": False, "error": e.description}), e.code
         except Exception as e:
             logger.exception("Неожиданная ошибка в роуте")
             return jsonify(_format_error(e)), 500

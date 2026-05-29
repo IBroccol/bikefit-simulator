@@ -13,7 +13,13 @@
   padding: var(--spacing-6) var(--spacing-4);
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-5);
+  gap: var(--spacing-6);
+}
+
+.mainForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
 }
 
 .section {
@@ -21,6 +27,19 @@
   border: 1px solid var(--border-color);
   border-radius: var(--radius-xl);
   padding: var(--spacing-5);
+}
+
+/* Section that contains the geometry table — no horizontal padding so
+   the sticky first column aligns with the scroll-container edge */
+.tableSection {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-5) 0;
+}
+
+.tableSectionHeader {
+  padding: 0 var(--spacing-5);
 }
 
 .sectionTitle {
@@ -53,6 +72,7 @@
   border: 1px solid var(--border-color);
   padding: var(--spacing-2) var(--spacing-3);
   vertical-align: middle;
+  line-height: 1;
 }
 
 .paramHeader {
@@ -60,12 +80,22 @@
   font-weight: 600;
   min-width: 260px;
   text-align: left;
+  position: sticky;
+  left: 0;
+  z-index: 2;
 }
 
 .sizeHeader {
   background-color: var(--bg-tertiary);
   min-width: 130px;
   text-align: center;
+}
+
+.sizeHeaderInner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-1);
 }
 
 .sizeInput {
@@ -76,7 +106,29 @@
   background-color: var(--bg-primary);
   color: var(--text-primary);
   font-size: 0.875rem;
-  margin-right: var(--spacing-1);
+}
+
+.removeBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background-color: var(--error);
+  color: #fff;
+  font-size: 0.75rem;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+
+.removeBtn:hover {
+  opacity: 1;
 }
 
 .sectionRow {
@@ -87,13 +139,22 @@
   letter-spacing: 0.05em;
   color: var(--text-secondary);
   padding: var(--spacing-2) var(--spacing-3);
+  position: sticky;
+  left: 0;
+  z-index: 1;
 }
 
 .paramCell {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-2);
   color: var(--text-primary);
+  white-space: nowrap;
+  background-color: var(--bg-secondary);
+  position: sticky;
+  left: 0;
+  z-index: 1;
+}
+
+.paramCell:has(.hintWrap:hover) {
+  z-index: 100;
 }
 
 .numInput {
@@ -116,8 +177,20 @@
 /* Shared params grid */
 .sharedGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--spacing-4);
+}
+
+@media (max-width: 900px) {
+  .sharedGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .sharedGrid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .field {
@@ -156,6 +229,8 @@
   position: relative;
   display: inline-flex;
   align-items: center;
+  vertical-align: middle;
+  margin-right: var(--spacing-2);
 }
 
 .hintIcon {
@@ -179,7 +254,7 @@
   left: 20px;
   top: 50%;
   transform: translateY(-50%);
-  width: 150px;
+  width: 300px;
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
   z-index: 200;
@@ -214,14 +289,32 @@
 
 .importForm {
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   gap: var(--spacing-3);
   align-items: center;
-  flex-wrap: wrap;
 }
 
-.importForm .input {
-  flex: 1;
-  min-width: 280px;
+.importInput {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: var(--spacing-2) var(--spacing-3);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  box-sizing: border-box;
+}
+
+.importInput:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.importBtn {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 /* Error states */
@@ -238,7 +331,7 @@
 /* Table cell wrapper for server error tooltip */
 .cellWrap {
   position: relative;
-  vertical-align: top;
+  vertical-align: middle;
 }
 
 .cellError {

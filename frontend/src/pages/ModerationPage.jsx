@@ -47,12 +47,10 @@ export default function ModerationPage() {
       <Header title="Модерация велосипедов" backTo="/dashboard" />
 
       <main id="moderation-container" className={styles.main}>
-        {/* Left: pending bikes list — populated by moderation.js */}
         <aside id="pending-bikes" className={styles.sidebar}>
           <p className={styles.loading}>Загрузка моделей…</p>
         </aside>
 
-        {/* Right: canvas + size buttons */}
         <section id="preview-section" className={styles.preview}>
           <canvas id="bike-canvas" className={styles.canvas} resize="true" />
           <div id="size-buttons" className={styles.sizeButtons} />

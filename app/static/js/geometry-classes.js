@@ -23,7 +23,6 @@ export class Figure {
         }
         this.hide(this.hidden || any_dep_hidden)
 
-        // this.shape создаётся только в наследниках, если реально нужен графический объект
         this.shape = null;
         Figure.allFigures.push(this)
     }
@@ -55,7 +54,6 @@ export class Figure {
         if (this.shape) {
             this.shape.visible = this.visible && !this.hidden;
         }
-
 
         if (changed) {
             for (let dep of this.dependents) {
@@ -112,7 +110,6 @@ export class Figure {
             };
         }
 
-        // ---- Circle ⨯ Circle ----
         if (isCircle(f1) && isCircle(f2)) {
             const C1 = circleGeom(f1),
                 C2 = circleGeom(f2);
@@ -123,10 +120,8 @@ export class Figure {
             const r1 = C1.r,
                 r2 = C2.r;
 
-            // нет пересечений или совпадающие центры
             if (d < EPS || d > r1 + r2 + EPS || d < Math.abs(r1 - r2) - EPS) return [];
 
-            // точка(и) пересечения
             const a = (r1 * r1 - r2 * r2 + d * d) / (2 * d);
             const h2 = Math.max(0, r1 * r1 - a * a);
             const h = Math.sqrt(h2);
@@ -135,7 +130,7 @@ export class Figure {
             const py = C1.cy + (a * dy) / d;
 
             if (h < EPS) {
-                return [new scope.Point(px, py)]; // касание
+                return [new scope.Point(px, py)];
             }
             return [
                 new scope.Point(px + h * (-dy) / d, py + h * (dx) / d),
@@ -143,7 +138,6 @@ export class Figure {
             ];
         }
 
-        // ---- Line/Segment ⨯ Line/Segment ----
         if (isLine(f1) && isLine(f2)) {
             const L1 = lineGeom(f1),
                 L2 = lineGeom(f2);
@@ -153,8 +147,8 @@ export class Figure {
             const r2x = L2.x2 - L2.x1,
                 r2y = L2.y2 - L2.y1;
 
-            const denom = r1x * r2y - r1y * r2x; // 2D cross
-            if (Math.abs(denom) < EPS) return []; // параллельны или совпадают
+            const denom = r1x * r2y - r1y * r2x;
+            if (Math.abs(denom) < EPS) return [];
 
             const qpx = L2.x1 - L1.x1;
             const qpy = L2.y1 - L1.y1;
@@ -168,7 +162,6 @@ export class Figure {
             return [new scope.Point(L1.x1 + t * r1x, L1.y1 + t * r1y)];
         }
 
-        // ---- Line/Segment ⨯ Circle ----
         if ((isLine(f1) && isCircle(f2)) || (isCircle(f1) && isLine(f2))) {
             const L = isLine(f1) ? lineGeom(f1) : lineGeom(f2);
             const C = isCircle(f1) ? circleGeom(f1) : circleGeom(f2);
@@ -221,7 +214,6 @@ export class Point extends Figure {
         this.radius = radius;
         this.hitbox_radius = hitbox_radius;
 
-        // Рисуем основную точку только если visible === true
         if (visible) {
             this.shape = new this.scope.Path.Circle({
                 center: [x, y],
@@ -231,7 +223,6 @@ export class Point extends Figure {
             });
         }
 
-        // Hitbox нужен только если точка moveable
         this.hitbox = null;
         if (this.moveable) {
             this.hitbox = new this.scope.Path.Circle({
@@ -258,14 +249,12 @@ export class Point extends Figure {
     }
 
     update(delta_x = 0, delta_y = 0) {
-        // --- 1. запоминаем старые координаты
         const prevX = this.x,
             prevY = this.y;
 
         this.x += delta_x
         this.y += delta_y
 
-        // --- 2. вычисляем новые координаты (НЕ зависит от this.shape)
         let newPos = new this.scope.Point(this.x, this.y);
 
         if (this.dependencies.length === 1) {
@@ -311,11 +300,9 @@ export class Point extends Figure {
             }
         }
 
-        // --- 3. обновляем внутренние координаты
         this.x = newPos.x;
         this.y = newPos.y;
 
-        // --- 4. если есть графика — синхронизируем
         if (this.shape) {
             this.shape.position = newPos;
             this.shape.visible = this.visible && !this.hidden;
@@ -324,7 +311,6 @@ export class Point extends Figure {
             this.hitbox.position = newPos;
         }
 
-        // --- 5. дельта для зависимых
         const dep_delta_x = this.x - prevX;
         const dep_delta_y = this.y - prevY;
 
@@ -337,7 +323,6 @@ export class Point extends Figure {
         this.update_dependents();
     }
 
-
     move(targetPoint) {
         if (!this.moveable || !this.shape) return;
 
@@ -349,7 +334,6 @@ export class Point extends Figure {
             this.update((targetPoint.x - this.x) * step / targetstep, (targetPoint.y - this.y) * step / targetstep);
         else
             this.update()
-
     }
 }
 
@@ -360,10 +344,9 @@ export class Circle extends Figure {
         super(scope, `Circle${Circle._id_counter}`, color, visible, moveable, [center, ...dependencies]);
         Circle._id_counter++;
 
-        this.center = center; // объект Point
+        this.center = center;
         this.radius = radius;
 
-        // Создаём Path только если реально нужно отрисовывать
         this.shape = null;
         if (visible) {
             this.shape = new this.scope.Path.Circle({
@@ -398,7 +381,6 @@ export class Circle extends Figure {
     }
 
     closest_valid(point) {
-        // используем только математику, не shape
         const centerPt = new this.scope.Point(this.center.x, this.center.y);
         const vec = point.subtract(centerPt);
 
@@ -455,7 +437,6 @@ export class CircleByCenterEdge extends Figure {
             this.shape.visible = this.visible && !this.hidden;
         }
 
-
         this.update_dependents();
     }
 }
@@ -470,8 +451,6 @@ export class Line extends Figure {
         this.p1 = p1;
         this.p2 = p2;
         this.width = width;
-
-
 
         this.shape = null;
         if (visible) {
@@ -516,7 +495,7 @@ export class Line extends Figure {
         const ap = point.subtract(a);
         const t = ap.dot(ab) / ab.dot(ab);
 
-        return a.add(ab.multiply(t)); // проекция на прямую
+        return a.add(ab.multiply(t));
     }
 }
 
@@ -524,7 +503,6 @@ export class Segment extends Line {
     constructor({ scope, p1, p2, width = 1, color = null, visible = true, dash = false, moveable = false, dependencies = [] }) {
         super({ scope, p1, p2, width, color, visible, dash, moveable, dependencies });
 
-        // для сегмента сразу обрезаем линию до p1–p2
         if (this.shape) {
             this.shape.firstSegment.point = new this.scope.Point(this.p1.x, this.p1.y);
             this.shape.lastSegment.point = new this.scope.Point(this.p2.x, this.p2.y);
@@ -554,7 +532,6 @@ export class Segment extends Line {
         const ap = point.subtract(a);
         let t = ap.dot(ab) / ab.dot(ab);
 
-        // clamp [0,1]
         t = Math.max(0, Math.min(1, t));
 
         return a.add(ab.multiply(t));
@@ -633,7 +610,6 @@ export class Arc extends Figure {
 
         const projected = centerPt.add(vec.normalize().multiply(this.radius));
 
-        // вычисляем угол
         let angProj = Math.atan2(projected.y - this.center.y, projected.x - this.center.x) * 180 / Math.PI;
         let angFrom = ((this.fromAngle % 360) + 360) % 360;
         let angTo = ((this.toAngle % 360) + 360) % 360;
@@ -711,15 +687,12 @@ export class ArcThrough3Points extends Figure {
 
         const projected = center.add(vec.normalize(radius));
 
-        // Угол точки относительно центра окружности
         const ang = (pt) => Math.atan2(pt.y - center.y, pt.x - center.x);
         const a1 = ang(this.p1);
         const a2 = ang(this.p2);
         const a3 = ang(this.p3);
         const ap = ang(projected);
 
-        // Нормализует угол b относительно a в диапазон [0, 2π)
-        // чтобы можно было сравнивать углы в одном направлении обхода
         const normFrom = (a, b) => {
             let d = b - a;
             while (d < 0) d += 2 * Math.PI;
@@ -727,15 +700,10 @@ export class ArcThrough3Points extends Figure {
             return d;
         };
 
-        // Определяем направление обхода дуги p1→p2→p3:
-        // d12 = угол от p1 до p2, d13 = угол от p1 до p3 (оба в [0, 2π))
-        // Если d12 < d13 — обход CCW (против часовой), иначе CW (по часовой)
         const d12 = normFrom(a1, a2);
         const d13 = normFrom(a1, a3);
         const dp  = normFrom(a1, ap);
 
-        // ap лежит на дуге p1→p2→p3 тогда и только тогда,
-        // когда dp находится между 0 и d13 в том же направлении что d12
         const inArc = (d12 <= d13) ? (dp <= d13) : (dp >= d13);
 
         if (inArc) {
@@ -776,7 +744,7 @@ export class Angle extends Figure {
         super(scope, `Angle${Angle._id_counter++}`, color, visible, false, [p1, p2, p3, ...dependencies]);
 
         this.p1 = p1;
-        this.p2 = p2; // вершина угла
+        this.p2 = p2;
         this.p3 = p3;
         this.radius = radius;
         this.validRange = valid_range
@@ -786,7 +754,6 @@ export class Angle extends Figure {
             if (p) p.dependents.push(this);
         }
 
-        // графика
         this.arc = null;
         this.label = "";
 
@@ -833,7 +800,6 @@ export class Angle extends Figure {
         let ang1 = Math.atan2(v1.y, v1.x);
         let ang2 = Math.atan2(v2.y, v2.x);
 
-        // нормализация
         let dAng = ang2 - ang1;
         if (dAng <= -Math.PI) dAng += 2 * Math.PI;
         if (dAng > Math.PI) dAng -= 2 * Math.PI;
@@ -851,7 +817,6 @@ export class Angle extends Figure {
                 this.set_color('green')
         }
 
-        // точки дуги
         const from = O.add(v1.multiply(this.radius));
         const to = O.add(v2.multiply(this.radius));
         const mid = O.add(
@@ -861,7 +826,6 @@ export class Angle extends Figure {
             ).multiply(this.radius)
         );
 
-        // обновляем дугу
         if (this.arc) {
             this.arc.removeSegments();
             this.arc.add(from);
@@ -869,7 +833,6 @@ export class Angle extends Figure {
             this.arc.visible = this.visible && !this.hidden;
         }
 
-        // обновляем подпись
         if (this.label) {
             this.label.content = angleDeg.toFixed(1) + "°";
             this.label.position = O.add(

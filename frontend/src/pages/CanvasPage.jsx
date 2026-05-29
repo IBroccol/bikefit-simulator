@@ -7,16 +7,19 @@ export default function CanvasPage() {
 
   useEffect(() => {
     window.element_ids = {
-      canvas:        'myCanvas',
-      bikeSearch:    'bikeSearch',
-      bikeList:      'bikeList',
-      sizeSelect:    'sizeSelect',
-      fitSearch:     'fitSearch',
-      fitList:       'fitList',
-      fitInput:      'fitInput',
-      saveButton:    'saveBtn',
-      resetButton:   'resetBtn',
-      deleteButton:  'deleteBtn',
+      canvas:               'myCanvas',
+      bikeSearch:           'bikeSearch',
+      bikeList:             'bikeList',
+      sizeSelect:           'sizeSelect',
+      fitSearch:            'fitSearch',
+      fitList:              'fitList',
+      fitInput:             'fitInput',
+      saveButton:           'saveBtn',
+      resetButton:          'resetBtn',
+      deleteButton:         'deleteBtn',
+      handlebarWidthInput:  'handlebarWidth',
+      exportTxtButton:      'exportTxtBtn',
+      exportCsvButton:      'exportCsvBtn',
     };
 
     function loadScript(src, type = 'text/javascript') {
@@ -56,7 +59,6 @@ export default function CanvasPage() {
       <Header title="Настройка посадки" backTo="/dashboard" />
 
       <div className={styles.layout}>
-        {/* Left sidebar: bike selection */}
         <aside className={`sidebar ${styles.sidebar}`}>
           <div className="block">
             <h3>Велосипед</h3>
@@ -79,7 +81,6 @@ export default function CanvasPage() {
           </div>
         </aside>
 
-        {/* Center: canvas */}
         <main className={styles.canvasContainer}>
           <div className={styles.canvasWrapper}>
             <div className={styles.hints}>
@@ -104,7 +105,6 @@ export default function CanvasPage() {
           </div>
         </main>
 
-        {/* Right sidebar: fits */}
         <aside className={`sidebar ${styles.sidebar}`}>
           <div className="block">
             <h3>Мои посадки</h3>
@@ -134,6 +134,29 @@ export default function CanvasPage() {
               <input type="text" id="fitInput" placeholder="Введите название" />
               <button className="btn btn-success btn-block" id="saveBtn">
                 Сохранить
+              </button>
+            </div>
+          </div>
+
+          <div className="block">
+            <h3>Экспорт посадки</h3>
+            <div className="input-group">
+              <label htmlFor="handlebarWidth">Ширина руля, мм</label>
+              <input
+                type="number"
+                id="handlebarWidth"
+                placeholder="например, 420"
+                min="300"
+                max="500"
+                step="5"
+              />
+            </div>
+            <div className={styles.exportButtons}>
+              <button className="btn btn-secondary" id="exportTxtBtn">
+                ↓ TXT
+              </button>
+              <button className="btn btn-secondary" id="exportCsvBtn">
+                ↓ CSV
               </button>
             </div>
           </div>

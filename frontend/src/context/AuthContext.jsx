@@ -16,7 +16,6 @@ export function AuthProvider({ children }) {
 
   const login = async (credentials) => {
     await authApi.login(credentials);
-    // /auth/login returns { success, message } — fetch the user separately
     const user = await authApi.me();
     setUser(user);
     return user;

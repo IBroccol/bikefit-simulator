@@ -33,14 +33,11 @@ export class InterfacePreview {
     async onBikeSelect(bike_model, bike_model_id) {
         this.cur_bike_model = bike_model;
 
-        // Очистим canvas при смене модели
         this.drawer.clearCanvas();
 
-        // Очистим старые кнопки размеров
         const sizeContainer = this.sizeButtons
         sizeContainer.innerHTML = "";
 
-        // Получаем размеры для выбранной модели
         const sizes = await this.fetchSizes(bike_model_id);
 
         if (sizes.length === 0) {
@@ -48,14 +45,12 @@ export class InterfacePreview {
             return;
         }
 
-        // Создаём кнопки для каждого размера
         sizes.forEach(sizeObj => {
             const btn = document.createElement("button");
             btn.textContent = sizeObj.size;
             btn.className = "size-btn";
 
             btn.addEventListener("click", async() => {
-                // Снятие выделения с других кнопок
                 document.querySelectorAll(".size-btn").forEach(b => b.classList.remove("active"));
                 btn.classList.add("active");
 
@@ -75,9 +70,7 @@ export class InterfacePreview {
             const bike_geo = await this.getBikeGeo(size_id);
             this.drawer.INIT_GEOMETRY = bike_geo;
             this.drawer.draw_preview();
-        } catch (err) {
-            // Silently handle error
-        }
+        } catch (err) {}
     }
 
     async getBikeGeo(size_id) {

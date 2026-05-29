@@ -21,6 +21,15 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
         cookieDomainRewrite: 'localhost',
+        bypass(req) {
+          // Don't proxy browser navigation requests (GET + text/html Accept).
+          // /bikes/* paths are both React routes (/bikes/new, /bikes) and API
+          // endpoints (/bikes/add, /bikes/list, etc.). Browser navigations carry
+          // Accept: text/html and must be served by Vite as index.html.
+          if (req.method === 'GET' && req.headers.accept?.includes('text/html')) {
+            return '/index.html';
+          }
+        },
       },
       '/fits': {
         target: 'http://localhost:5000',

@@ -108,9 +108,7 @@ async function init() {
                 });
                 sizeButtonsContainer.appendChild(btn);
             });
-        } catch (err) {
-            // size fetch failed — leave buttons empty
-        }
+        } catch (err) {}
     }
 
     await fetchBikes();

@@ -11,7 +11,7 @@
   gap: var(--spacing-4);
   padding: var(--spacing-4);
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 @media (max-width: 1200px) {
@@ -42,7 +42,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-4);
-  overflow-y: auto;
+  overflow: visible;
 }
 
 .canvasContainer {
@@ -119,4 +119,13 @@
   gap: var(--spacing-2);
   padding: var(--spacing-2) 0;
   flex-shrink: 0;
+}
+
+.exportButtons {
+  display: flex;
+  gap: var(--spacing-2);
+}
+
+.exportButtons .btn {
+  flex: 1;
 }

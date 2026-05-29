@@ -54,7 +54,6 @@ export default function RegisterPage() {
       const data = err.response?.data;
       if (data?.errors?.length) {
         const errs = {};
-        // Server uses confirm_password; React state key is confirmPassword
         const fieldMap = { confirm_password: 'confirmPassword' };
         data.errors.forEach(e => {
           if (e.field) {

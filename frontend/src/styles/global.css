@@ -220,7 +220,7 @@ a:hover {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-4);
-    overflow-y: auto;
+    overflow: visible;
 }
 
 .block {

@@ -91,9 +91,6 @@ export class Drawer {
         this.GEOMETRY = structuredClone(this.INIT_GEOMETRY)
         this.ANTROPOMETRICS = structuredClone(this.INIT_ANTROPOMETRICS)
 
-        // Geometry and anthropometry values from the server are PostgreSQL NUMERIC,
-        // serialized as strings. Convert all numeric-looking values to floats first
-        // so that arithmetic (especially +) works correctly throughout the drawer.
         for (let DATA of [this.GEOMETRY, this.ANTROPOMETRICS]) {
             if (!DATA) continue;
             for (const key in DATA) {
@@ -104,8 +101,6 @@ export class Drawer {
             }
         }
 
-        // When no fit data is available (no anthropometry), use geometry-based defaults
-        // so the bike frame renders correctly without a rider overlay
         if (this.INIT_FIT) {
             this.FIT = structuredClone(this.INIT_FIT)
         } else {
@@ -151,7 +146,6 @@ export class Drawer {
         this.angles.TorsoAngle = new Angle({ scope: this.scope, p1: this.rider.Shoulder, p2: this.rider.HipJoint, p3: point0, valid_range: [35, 47.5], draw_segments: false })
         this.angles.ShoulderAngle = new Angle({ scope: this.scope, p1: this.rider.Hands, p2: this.rider.Shoulder, p3: this.rider.HipJoint, draw_segments: true, valid_range: [87.5, 92.5] })
 
-
         point0 = new Point({ scope: this.scope, x: this.bike.ShifterAxle.x + this.GEOMETRY['shifterReach'], y: this.bike.ShifterAxle.y, dependencies: [this.bike.ShifterAxle], visible: false })
         this.angles.ShifterAngle = new Angle({ scope: this.scope, p1: point0, p2: this.bike.ShifterAxle, p3: this.rider.Hands, draw_segments: false, visible: false })
     }
@@ -163,7 +157,6 @@ export class Drawer {
 
         Figure.allFigures = [];
 
-        // Сброс счетчиков
         Point._id_counter = 0;
         Circle._id_counter = 0;
         Line._id_counter = 0;
@@ -180,7 +173,6 @@ export class Drawer {
         const Rearx = (this.width - this.GEOMETRY['wheelbase']) / 2
         const BBx = Rearx + Math.sqrt((this.GEOMETRY['chainstay'] ** 2 - this.GEOMETRY['bbdrop'] ** 2))
 
-        //---------Cranks--------
         this.bike.BottomBracket = new Point({ scope: this.scope, x: BBx, y: 1400 * this.scale, moveable: false })
         let circle0 = new Circle({ scope: this.scope, center: this.bike.BottomBracket, radius: this.GEOMETRY['crankLen'], visible: false })
         this.bike.PedalSpindel_1 = new Point({ scope: this.scope, x: inf, y: this.bike.BottomBracket.y, dependencies: [circle0], moveable: true })
@@ -188,7 +180,6 @@ export class Drawer {
         this.bike.PedalSpindel_2 = new Point({ scope: this.scope, x: 0, y: this.bike.BottomBracket.y, dependencies: [this.bike.crankLine, circle0] })
         this.bike.Cranks = new Segment({ scope: this.scope, p1: this.bike.PedalSpindel_1, p2: this.bike.PedalSpindel_2 })
 
-        //---------WheelAxes--------
         circle0 = new Circle({ scope: this.scope, center: this.bike.BottomBracket, radius: this.GEOMETRY['chainstay'], visible: false });
         let point0 = new Point({ scope: this.scope, x: this.bike.BottomBracket.x, y: this.bike.BottomBracket.y - this.GEOMETRY['bbdrop'], dependencies: [this.bike.BottomBracket], visible: false });
         let line0 = h_line(this.scope, point0, false);
@@ -196,7 +187,6 @@ export class Drawer {
         circle0 = new Circle({ scope: this.scope, center: this.bike.RearAxis, radius: this.GEOMETRY['wheelbase'], visible: false });
         this.bike.FrontAxis = new Point({ scope: this.scope, x: inf, y: 0, dependencies: [circle0, line0], visible: false })
 
-        //----------RearTubes----------
         point0 = new Point({ scope: this.scope, x: this.bike.BottomBracket.x - 100, y: this.bike.BottomBracket.y, dependencies: [this.bike.BottomBracket], visible: false })
         this.bike.SeatTubeLine = angled_line(this.scope, point0, this.bike.BottomBracket, this.GEOMETRY['seatAngle'], false)
 
@@ -209,7 +199,6 @@ export class Drawer {
         this.bike.SeatTubeClamp = new Point({ scope: this.scope, x: 0, y: 0, dependencies: [this.bike.SeatTubeLine, circle0], visible: false })
         this.bike.SeatTube = new Segment({ scope: this.scope, p1: this.bike.BottomBracket, p2: this.bike.SeatTubeClamp })
 
-        //-----FrontTubes-----
         line0 = v_line(this.scope, this.bike.BottomBracket, false);
         circle0 = new Circle({ scope: this.scope, center: this.bike.BottomBracket, radius: this.GEOMETRY['stack'], visible: false });
         point0 = new Point({ scope: this.scope, x: 0, y: 0, dependencies: [line0, circle0], visible: false });
@@ -276,7 +265,6 @@ export class Drawer {
         point1 = new Point({ scope: this.scope, x: inf, y: 0, dependencies: [this.bike.StemLine, circle0], visible: false })
         this.bike.Stem = new Segment({ scope: this.scope, p1: point0, p2: point1 })
         this.bike.Steerer = new Segment({ scope: this.scope, p1: this.bike.TopTube.p1, p2: this.bike.Stem.p1 })
-
     }
 
     drawHandlebars() {
@@ -319,7 +307,6 @@ export class Drawer {
             new Segment({ scope: this.scope, p1: point1, p2: point2 })
         }
 
-
         point2 = new Point({ scope: this.scope, x: this.bike.ShifterAxle.x + curve_r1 + this.GEOMETRY['shifterReach'], y: this.bike.ShifterAxle.y, dependencies: [this.bike.ShifterAxle], visible: false })
         arc1 = new Arc({ scope: this.scope, center: this.bike.ShifterAxle, point: point2, fromAngle: -45, toAngle: -10, visible: false })
         this.rider.Hands = new Point({ scope: this.scope, x: this.bike.ShifterAxle.x + curve_r1 * Math.cos(this.FIT['shifterAngle'] / 180 * Math.PI), y: this.bike.ShifterAxle.y - curve_r1 * Math.sin(this.FIT['shifterAngle'] / 180 * Math.PI), dependencies: [arc1], moveable: true })
@@ -340,15 +327,12 @@ export class Drawer {
         let point1 = new Point({ scope: this.scope, x: inf, y: 0, dependencies: [line0, circle0], visible: false })
         let line1 = angled_line(this.scope, point1, point0, 45, false)
 
-
         point1 = new Point({ scope: this.scope, x: inf, y: inf, dependencies: [line1, circle0], visible: false })
         let point2 = new Point({ scope: this.scope, x: 0, y: 0, dependencies: [line1, circle0], visible: false })
         line1 = v_line(this.scope, point1, false)
 
         let line2 = h_line(this.scope, point2, false)
-
         let line3 = h_line(this.scope, point1, false)
-
         let line4 = v_line(this.scope, point2, false)
 
         point1 = new Point({ scope: this.scope, x: 0, y: 0, dependencies: [line1, line2], visible: false })
@@ -362,7 +346,6 @@ export class Drawer {
 
         this.bike.KinematicPoint1 = new Point({ scope: this.scope, x: 0, y: inf, dependencies: [circle1, line1], visible: false })
         this.bike.KinematicPoint2 = new Point({ scope: this.scope, x: 0, y: inf, dependencies: [circle2, line2], visible: false })
-
     }
 
     DrawLeg(HipJoint, PedalSpindel, KinematicPoint, draw_angle = false, draw_vline = false) {
@@ -405,6 +388,7 @@ export class Drawer {
 
     drawLegs() {
         this.rider.HipJoint = new Point({ scope: this.scope, x: this.bike.Saddle.x - this.GEOMETRY['saddleLen'] / 8, y: this.bike.Saddle.y - this.ANTROPOMETRICS['hipJointOffset'], dependencies: [this.bike.Saddle], visible: false })
+
         this.DrawLeg(this.rider.HipJoint, this.bike.PedalSpindel_1, this.bike.KinematicPoint1, true, true)
         this.DrawLeg(this.rider.HipJoint, this.bike.PedalSpindel_2, this.bike.KinematicPoint2)
     }
@@ -433,7 +417,6 @@ export class Drawer {
         let circle1 = new Circle({ scope: this.scope, center: this.rider.Shoulder, radius: this.ANTROPOMETRICS['torsoMax'] * 0.51, visible: false })
         let point0 = new Point({ scope: this.scope, x: 0, y: 0, dependencies: [circle0, circle1], visible: false })
         this.rider.Back = new ArcThrough3Points({ scope: this.scope, p1: this.rider.HipJoint, p2: point0, p3: this.rider.Shoulder })
-
     }
 
     drawArms() {

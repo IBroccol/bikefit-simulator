@@ -21,9 +21,21 @@ export class Interface {
         this.resetButton = document.getElementById(element_ids.resetButton);
         this.deleteButton = document.getElementById(element_ids.deleteButton);
 
+        this.handlebarWidthInput = element_ids.handlebarWidthInput
+            ? document.getElementById(element_ids.handlebarWidthInput)
+            : null;
+        this.exportTxtButton = element_ids.exportTxtButton
+            ? document.getElementById(element_ids.exportTxtButton)
+            : null;
+        this.exportCsvButton = element_ids.exportCsvButton
+            ? document.getElementById(element_ids.exportCsvButton)
+            : null;
+
+        this.bikesReady = null;
+
         this.setupEventListeners()
         this.getAnthro()
-        this.fetchBikes()
+        this.bikesReady = this.fetchBikes()
     }
 
     setupEventListeners() {
@@ -31,12 +43,14 @@ export class Interface {
         this.resetButton.addEventListener("click", () => this.drawer.reset());
         this.deleteButton.addEventListener("click", () => this.deleteFit());
 
-        this.bikeSearch.addEventListener("input", () => {
+        this.bikeSearch.addEventListener("input", async () => {
+            await this.bikesReady;
             const query = this.bikeSearch.value.trim().toLowerCase();
             const filtered = this._filterBikes(query);
             this.renderAutocompleteList(this.bikeList, filtered, this.bikeSearch, this.onBikeChoise.bind(this));
         });
-        this.bikeSearch.addEventListener("focus", () => {
+        this.bikeSearch.addEventListener("focus", async () => {
+            await this.bikesReady;
             const query = this.bikeSearch.value.trim().toLowerCase();
             const filtered = this._filterBikes(query);
             this.renderAutocompleteList(this.bikeList, filtered, this.bikeSearch, this.onBikeChoise.bind(this));
@@ -59,6 +73,13 @@ export class Interface {
             this.renderAutocompleteList(this.fitList, savedFits, this.fitSearch, this.onFitChoise.bind(this));
         });
         this.setupAutocompleteHide(this.fitList, this.fitSearch);
+
+        if (this.exportTxtButton) {
+            this.exportTxtButton.addEventListener("click", () => this.exportFit('txt'));
+        }
+        if (this.exportCsvButton) {
+            this.exportCsvButton.addEventListener("click", () => this.exportFit('csv'));
+        }
     }
 
     async fetchSizes(bike_model_id) {
@@ -79,7 +100,6 @@ export class Interface {
                 throw new Error(result.error || "Ошибка при получении размеров");
             }
 
-            // Сохраняем размеры с их ID
             this.savedSizes = {};
             const sizes = [];
             result.data.forEach(item => {
@@ -324,7 +344,6 @@ export class Interface {
                 return null;
             }
 
-            // data may be null if anthropometry is not set — bike draws without fit overlay
             return result.data ?? null;
         } catch (error) {
             console.error('Ошибка при загрузке базовой посадки:', error);
@@ -424,7 +443,6 @@ export class Interface {
 
             this.drawer.INIT_ANTROPOMETRICS = result.data;
         } catch {
-            // В случае ошибки сети или сервера также перенаправляем на страницу настроек
             this.showError("Произошла ошибка при загрузке ваших параметров. Вы будете перенаправлены на страницу через 3 секунды.");
             setTimeout(() => {
                 window.location.href = '/anthropometry';
@@ -443,6 +461,110 @@ export class Interface {
         };
 
         return fitSettings
+    }
+
+    getMeasurements(handlebarWidth = 0) {
+        const d = this.drawer;
+        if (!d || !d.bike || !d.bike.BottomBracket || !d.bike.Saddle || !d.rider || !d.rider.Hands) {
+            return null;
+        }
+
+        const s = d.scale;
+
+        const saddleHeightMm = d.GEOMETRY['saddleHeight'] / s;
+        const seatHeightAlongTube = distance(d.bike.BottomBracket, d.bike.SeatpostTop) / s + saddleHeightMm;
+
+        const saddleOffsetMm = (d.bike.Saddle.x - d.bike.SeatpostTop.x) / s;
+
+        const noseToSteerer = (d.bike.TopTube.p1.x - d.bike.SaddleNose.x) / s;
+
+        const noseToHandsCanvas = distance(d.bike.SaddleNose, d.rider.Hands) / s;
+        const halfWidth = handlebarWidth / 2;
+        const noseToHands = Math.sqrt(noseToHandsCanvas ** 2 + halfWidth ** 2);
+
+        const saddleSurfaceY = d.bike.Saddle.y - d.GEOMETRY['saddleHeight'];
+        const heightDiff = (d.rider.Hands.y - saddleSurfaceY) / s;
+
+        return {
+            seatHeightAlongTube: Math.round(seatHeightAlongTube * 10) / 10,
+            saddleOffset: Math.round(saddleOffsetMm * 10) / 10,
+            noseToSteerer: Math.round(noseToSteerer * 10) / 10,
+            noseToHands: Math.round(noseToHands * 10) / 10,
+            heightDiff: Math.round(heightDiff * 10) / 10,
+            handlebarWidth,
+            bikeName: this.cur_bike_model || '—',
+            size: this.cur_size || '—',
+            fitName: this.cur_fit_name || '—',
+        };
+    }
+
+    exportFit(format) {
+        const handlebarWidth = this.handlebarWidthInput
+            ? parseFloat(this.handlebarWidthInput.value) || 0
+            : 0;
+
+        const m = this.getMeasurements(handlebarWidth);
+        if (!m) {
+            this.showError('Сначала выберите велосипед и размер для экспорта настроек.');
+            return;
+        }
+
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('ru-RU');
+        const timeStr = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+
+        let content, filename, mimeType;
+
+        if (format === 'csv') {
+            const header = ['Параметр', 'Значение', 'Единица'].join(';');
+            const rows = [
+                ['Велосипед', m.bikeName, ''],
+                ['Размер', m.size, ''],
+                ['Посадка', m.fitName, ''],
+                ['Дата экспорта', `${dateStr} ${timeStr}`, ''],
+                ['', '', ''],
+                ['Высота седла от каретки (вдоль подседельной трубы)', m.seatHeightAlongTube, 'мм'],
+                ['Горизонтальное смещение седла', m.saddleOffset, 'мм'],
+                ['Расстояние от носика седла до оси рулевой', m.noseToSteerer, 'мм'],
+                ['Ширина руля (введено)', m.handlebarWidth || '—', m.handlebarWidth ? 'мм' : ''],
+                ['Расстояние от носика седла до ложбинки пистолетов', m.noseToHands, 'мм'],
+                ['Перепад высот седло–руль (+ = руль ниже)', m.heightDiff, 'мм'],
+            ];
+            content = [header, ...rows.map(r => r.join(';'))].join('\n');
+            filename = `bikefit_${m.bikeName}_${m.size}.csv`.replace(/\s+/g, '_');
+            mimeType = 'text/csv;charset=utf-8;';
+        } else {
+            const pad = (label, value, unit) =>
+                `  ${label.padEnd(52, '.')} ${String(value).padStart(8)} ${unit}`;
+            content = [
+                `  Велосипед : ${m.bikeName}`,
+                `  Размер    : ${m.size}`,
+                `  Посадка   : ${m.fitName}`,
+                `  Дата      : ${dateStr} ${timeStr}`,
+                '',
+                '──────────────────────────────────────────────────────────────',
+                '',
+                pad('Высота седла от каретки (вдоль подседельной трубы)', m.seatHeightAlongTube, 'мм'),
+                pad('Горизонтальное смещение седла (+ вперёд)', m.saddleOffset, 'мм'),
+                pad('Носик седла -> ось рулевой', m.noseToSteerer, 'мм'),
+                pad('Ширина руля (введено)', m.handlebarWidth || '—', m.handlebarWidth ? 'мм' : ''),
+                pad('Носик седла -> ложбинка пистолетов', m.noseToHands, 'мм'),
+                pad('Перепад высот седло–руль (+ = руль ниже)', m.heightDiff, 'мм'),
+                '',
+                '──────────────────────────────────────────────────────────────',
+                '  Сгенерировано: BikeFit Simulator',
+            ].join('\n');
+            filename = `bikefit_${m.bikeName}_${m.size}.txt`.replace(/\s+/g, '_');
+            mimeType = 'text/plain;charset=utf-8;';
+        }
+
+        const blob = new Blob(['\uFEFF' + content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
     }
 
     showError(message) {

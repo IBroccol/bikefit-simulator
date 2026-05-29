@@ -27,8 +27,6 @@ def _next_id(table):
     return _id
 
 
-# --- Пользователи ---
-
 def create_user_account(username, password):
     try:
         if any(u["username"] == username for u in _mock_db["users"]):
@@ -63,8 +61,6 @@ def get_user_by_id(user_id):
         return {"id": user["id"], "username": user["username"], "role": user["role"]}
     return None
 
-
-# --- Велосипеды ---
 
 def add_user_bike(user_id: int, bike: dict) -> dict:
     try:
@@ -181,8 +177,6 @@ def set_bike_pending(bike_id, user_id):
     return {"success": True}
 
 
-# --- Антропометрия ---
-
 def add_user_anthropometry(user_id, data):
     try:
         _mock_db["anthropometry"].append({
@@ -204,8 +198,6 @@ def get_latest_user_anthropometry(user_id):
     latest = max(records, key=lambda a: a["created_at"])
     return {k: v for k, v in latest.items() if k not in ("id", "user_id", "created_at")}
 
-
-# --- Посадка ---
 
 def save_fit_settings(user_id, data):
     try:

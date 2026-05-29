@@ -46,7 +46,6 @@ def get_bike_sizes():
     validate_request_data(data, ["bike_model_id"])
 
     bike_model_id = data.get("bike_model_id")
-    # Moderators can view sizes of any bike (including pending ones)
     if role != "moderator":
         accessible = any(bm["id"] == bike_model_id for bm in dao.get_visible_bike_models(user_id))
         if not accessible:
@@ -77,7 +76,6 @@ def get_bike_geometry():
     if size_row is None:
         return jsonify({"success": False, "error": "Размер велосипеда не найден"}), 404
 
-    # Moderators can view geometry of any bike (including pending ones)
     if role != "moderator":
         accessible = any(bm["id"] == size_row.get("bike_model_id") for bm in dao.get_visible_bike_models(user_id))
         if not accessible:

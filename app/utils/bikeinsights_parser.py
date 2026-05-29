@@ -1,50 +1,9 @@
-"""
-Parser for bikeinsights.com bike geometry pages.
-
-Extracts geometry data embedded as JSON in the SSR HTML.
-Returns a dict with:
-  {
-    "model": "2024 Specialized Bicycles Tarmac SL8 Expert",
-    "sizes": [
-      {
-        "label": "44",
-        "stack": 501, "reach": 366, "seatTube": 433,
-        "seatAngle": 75.5, "headTube": 99, "headAngle": 70.5,
-        "chainstay": 410, "wheelbase": 970, "bbdrop": 74,
-        "crankLen": 165, "stemLen": 70,
-        "rimD": 622, "tyreW": 26, "stemAngle": null
-      },
-      ...
-    ]
-  }
-
-Field mapping from bikeinsights → our app:
-  BikeGeometryFrame:
-    stack                       → stack
-    reach                       → reach
-    seat_tube_length_*          → seatTube  (best available)
-    seat_tube_angle             → seatAngle
-    head_tube_length            → headTube
-    head_tube_angle             → headAngle
-    chainstay_length            → chainstay
-    wheelbase                   → wheelbase
-    bottom_bracket_drop         → bbdrop
-
-  BikeGeometryBaseBuild (per-size build spec):
-    crank_length                → crankLen
-    stem_length                 → stemLen
-    wheel_bsd                   → rimD      (shared across sizes, taken from first size)
-    tire_width                  → tyreW     (shared)
-    stem_angle                  → stemAngle (shared)
-"""
-
 import re
 import json
 from typing import Optional
 
 
 def _get_val(obj: dict, *keys) -> Optional[float]:
-    """Return the first non-None value from the given keys."""
     for k in keys:
         v = obj.get(k)
         if v is not None:
@@ -56,14 +15,11 @@ def _get_val(obj: dict, *keys) -> Optional[float]:
 
 
 def _parse_objects_by_typename(html: str, typename: str) -> list:
-    """Find and parse all JSON objects with the given __typename."""
     starts = [m.start() for m in re.finditer(
         r'"__typename"\s*:\s*"' + re.escape(typename) + r'"', html
     )]
     results = []
     for start in starts:
-        # Walk backwards from the typename match to find the opening '{' of
-        # the object that directly contains this key (depth == 0 going back).
         brace_start = -1
         depth = 0
         i = start - 1
@@ -79,7 +35,6 @@ def _parse_objects_by_typename(html: str, typename: str) -> list:
             i -= 1
         if brace_start == -1:
             continue
-        # Now walk forward from brace_start to find the matching closing '}'
         depth = 0
         i = brace_start
         while i < len(html):
@@ -100,11 +55,6 @@ def _parse_objects_by_typename(html: str, typename: str) -> list:
 
 
 def parse_bikeinsights_html(html: str) -> dict:
-    """
-    Parse bikeinsights.com HTML and return structured geometry data.
-    Raises ValueError if the page cannot be parsed.
-    """
-    # --- Extract bike model name ---
     model = None
     h1_match = re.search(r'<h1[^>]*class="[^"]*header-title[^"]*"[^>]*>(.*?)</h1>', html, re.DOTALL)
     if h1_match:
@@ -116,7 +66,6 @@ def parse_bikeinsights_html(html: str) -> dict:
         if title_match:
             model = title_match.group(1).split(' - ')[0].strip()
 
-    # --- Find all BikeGeometryFrame objects ---
     frame_objects = _parse_objects_by_typename(html, 'BikeGeometryFrame')
     if not frame_objects:
         raise ValueError(
@@ -124,24 +73,18 @@ def parse_bikeinsights_html(html: str) -> dict:
             "Убедитесь, что ссылка ведёт на страницу велосипеда bikeinsights.com."
         )
 
-    # --- Find all BikeGeometryBaseBuild objects (build-specific: crank, stem, wheels) ---
     build_objects = _parse_objects_by_typename(html, 'BikeGeometryBaseBuild')
-    # They appear in the same order as frame objects (one per size)
 
-    # --- Match each geometry object to its size label ---
-    # Size label is found by searching backwards in HTML for "size":"XX"
     sizes = []
     for idx, (start, geo) in enumerate(frame_objects):
         context = html[max(0, start - 600):start]
         size_match = re.search(r'"size"\s*:\s*"([^"]+)"', context)
         size_label = size_match.group(1) if size_match else None
 
-        # Get corresponding build object (same index)
         build = build_objects[idx][1] if idx < len(build_objects) else {}
 
         entry = {"label": size_label or ""}
 
-        # --- Frame geometry ---
         stack = _get_val(geo, "stack")
         if stack is not None:
             entry["stack"] = stack
@@ -150,7 +93,6 @@ def parse_bikeinsights_html(html: str) -> dict:
         if reach is not None:
             entry["reach"] = reach
 
-        # Seat tube: prefer center-to-top, fall back to unknown
         seat_tube = _get_val(
             geo,
             "seat_tube_length_center_st_top",
@@ -186,7 +128,6 @@ def parse_bikeinsights_html(html: str) -> dict:
         if bbdrop is not None:
             entry["bbdrop"] = bbdrop
 
-        # --- Build-specific per-size data ---
         crank_len = _get_val(build, "crank_length")
         if crank_len is not None:
             entry["crankLen"] = crank_len
@@ -195,7 +136,6 @@ def parse_bikeinsights_html(html: str) -> dict:
         if stem_len is not None:
             entry["stemLen"] = stem_len
 
-        # Wheel/tyre data — stored per size but typically shared
         rim_d = _get_val(build, "wheel_bsd")
         if rim_d is not None:
             entry["rimD"] = rim_d

@@ -130,7 +130,6 @@ export default function MyBikesPage() {
 
   async function handleSelectSize(sizeObj) {
     setSelectedSize(sizeObj.size);
-    // Wait a tick so the canvas is definitely in the DOM before Drawer accesses it
     setTimeout(() => {
       if (window.__myBikesDrawPreview) {
         window.__myBikesDrawPreview(sizeObj.id);
@@ -172,7 +171,6 @@ export default function MyBikesPage() {
           <Spinner />
         ) : (
           <div className={styles.layout}>
-            {/* Left: bike list */}
             <aside className={styles.sidebar}>
               {bikes.length === 0 ? (
                 <p className={styles.empty}>Нет добавленных велосипедов</p>
@@ -214,7 +212,6 @@ export default function MyBikesPage() {
               )}
             </aside>
 
-            {/* Right: canvas + size buttons */}
             <section className={styles.preview}>
               <canvas
                 id="mybikes-canvas"

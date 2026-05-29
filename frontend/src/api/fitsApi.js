@@ -33,7 +33,6 @@ export const fitsApi = {
 
   getAnthropometry: async () => {
     const res = await client.get('/fits/get_anthropometry');
-    // Returns { success: true, data: { height, hip, ... } } or 404
     return res.data.data ?? res.data;
   },
 };

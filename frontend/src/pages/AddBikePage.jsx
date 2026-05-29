@@ -6,19 +6,19 @@ import { ErrorMessage, SuccessMessage } from '../components/ui/ErrorMessage';
 import styles from './AddBikePage.module.css';
 
 const SHARED_PARAMS = [
-  { name: 'rimD',          label: 'Диаметр обода, мм',                          required: false, hint: 'rimD',         placeholder: '622' },
-  { name: 'tyreW',         label: 'Ширина покрышек, мм',                         required: false, hint: 'tyreW',        placeholder: '25' },
-  { name: 'stemAngle',     label: 'Угол выноса, град.',                          required: false, hint: 'stemAngle',    placeholder: '-8' },
-  { name: 'minStemHight',  label: 'Мин. высота установки выноса, мм',            required: false, hint: 'minStemHight',  placeholder: '30' },
-  { name: 'maxStemHight',  label: 'Макс. высота установки выноса, мм',           required: false, hint: 'maxStemHight',  placeholder: '70' },
-  { name: 'barReach',      label: 'Рич руля, мм',                                required: false, hint: 'barReach',     placeholder: '75' },
-  { name: 'barDrop',       label: 'Дроп руля, мм',                               required: false, hint: 'barDrop',      placeholder: '125' },
-  { name: 'shifterReach',  label: 'Рич тормозных рукояток, мм',                  required: false, hint: 'shifterReach',  placeholder: '70' },
-  { name: 'saddleLen',     label: 'Длина седла, мм',                             required: false, hint: 'saddleLen',    placeholder: '240' },
-  { name: 'saddleRailLen', label: 'Длина рейлов седла, мм',                      required: false, hint: 'saddleRailLen', placeholder: '60' },
-  { name: 'saddleHeight',  label: 'Высота седла, мм',                            required: false, hint: 'saddleHeight',  placeholder: '50' },
-  { name: 'minseatpostLen',label: 'Мин. высота установки подседельного штыря, мм', required: false, hint: 'minseatpostLen', placeholder: '50' },
-  { name: 'maxseatpostLen',label: 'Макс. высота установки подседельного штыря, мм', required: false, hint: 'maxseatpostLen', placeholder: '250' },
+  { name: 'rimD',          label: 'Диаметр обода, мм',          required: false, hint: 'rimD',          placeholder: '622' },
+  { name: 'tyreW',         label: 'Ширина покрышек, мм',         required: false, hint: 'tyreW',         placeholder: '25' },
+  { name: 'stemAngle',     label: 'Угол выноса, град.',          required: false, hint: 'stemAngle',     placeholder: '-8' },
+  { name: 'minStemHight',  label: 'Мин. высота выноса, мм',      required: false, hint: 'minStemHight',  placeholder: '30' },
+  { name: 'maxStemHight',  label: 'Макс. высота выноса, мм',     required: false, hint: 'maxStemHight',  placeholder: '70' },
+  { name: 'barReach',      label: 'Рич руля, мм',                required: false, hint: 'barReach',      placeholder: '75' },
+  { name: 'barDrop',       label: 'Дроп руля, мм',               required: false, hint: 'barDrop',       placeholder: '125' },
+  { name: 'shifterReach',  label: 'Рич рукояток, мм',            required: false, hint: 'shifterReach',  placeholder: '70' },
+  { name: 'saddleLen',     label: 'Длина седла, мм',             required: false, hint: 'saddleLen',     placeholder: '240' },
+  { name: 'saddleRailLen', label: 'Длина рейлов седла, мм',      required: false, hint: 'saddleRailLen', placeholder: '60' },
+  { name: 'saddleHeight',  label: 'Высота седла, мм',            required: false, hint: 'saddleHeight',  placeholder: '50' },
+  { name: 'minseatpostLen',label: 'Мин. длина штыря, мм',        required: false, hint: 'minseatpostLen', placeholder: '50' },
+  { name: 'maxseatpostLen',label: 'Макс. длина штыря, мм',       required: false, hint: 'maxseatpostLen', placeholder: '250' },
 ];
 
 const PER_SIZE_PARAMS = [
@@ -219,7 +219,6 @@ export default function AddBikePage() {
             return;
           }
 
-          // "paramName_idx" → per-size error; no suffix → size 0
           const match = field.match(/^(.+?)_(\d+)$/);
           if (match) {
             const paramName = match[1];
@@ -252,7 +251,6 @@ export default function AddBikePage() {
         <SuccessMessage message={success} />
         <SuccessMessage message={importSuccess} />
 
-        {/* URL import section */}
         <div className={styles.section}>
           <h3 className={styles.sectionTitle}>Импорт с bikeinsights.com</h3>
           <p className={styles.importHint}>
@@ -260,26 +258,26 @@ export default function AddBikePage() {
             <a href="https://bikeinsights.com" target="_blank" rel="noopener noreferrer">bikeinsights.com</a>
             {' '}— данные геометрии будут заполнены автоматически.
           </p>
-          <form onSubmit={handleImport} className={styles.importForm} noValidate>
+          <div className={styles.importForm}>
             <input
-              className={styles.input}
+              className={styles.importInput}
               type="url"
               placeholder="https://bikeinsights.com/bikes/..."
               value={importUrl}
               onChange={e => setImportUrl(e.target.value)}
             />
             <button
-              type="submit"
-              className="btn btn-info"
+              type="button"
+              className={`btn btn-info ${styles.importBtn}`}
               disabled={importing || !importUrl.trim()}
+              onClick={handleImport}
             >
               {importing ? 'Загрузка…' : 'Импортировать'}
             </button>
-          </form>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} noValidate>
-          {/* Model name */}
+        <form onSubmit={handleSubmit} noValidate className={styles.mainForm}>
           <div className={styles.section}>
             <h3 className={styles.sectionTitle}>Основная информация</h3>
             <div className={styles.field}>
@@ -299,9 +297,8 @@ export default function AddBikePage() {
             </div>
           </div>
 
-          {/* Geometry table */}
-          <div className={styles.section}>
-            <div className={styles.sizesHeader}>
+          <div className={styles.tableSection}>
+            <div className={`${styles.sizesHeader} ${styles.tableSectionHeader}`}>
               <h3 className={styles.sectionTitle}>Геометрия по размерам</h3>
               <button type="button" className="btn btn-info" onClick={addSize}>
                 + Добавить размер
@@ -315,21 +312,23 @@ export default function AddBikePage() {
                     <th className={styles.paramHeader}>Параметр</th>
                     {sizes.map((s, idx) => (
                       <th key={idx} className={styles.sizeHeader}>
-                        <input
-                          className={`${styles.sizeInput} ${submitted && !s.label.trim() ? styles.inputError : ''}`}
-                          type="text"
-                          placeholder="Размер"
-                          value={s.label}
-                          onChange={e => updateSizeLabel(idx, e.target.value)}
-                        />
-                        {sizes.length > 1 && (
-                          <button
-                            type="button"
-                            className="btn btn-danger"
-                            title="Удалить размер"
-                            onClick={() => removeSize(idx)}
-                          >×</button>
-                        )}
+                        <div className={styles.sizeHeaderInner}>
+                          <input
+                            className={`${styles.sizeInput} ${submitted && !s.label.trim() ? styles.inputError : ''}`}
+                            type="text"
+                            placeholder="Размер"
+                            value={s.label}
+                            onChange={e => updateSizeLabel(idx, e.target.value)}
+                          />
+                          {sizes.length > 1 && (
+                            <button
+                              type="button"
+                              className={styles.removeBtn}
+                              title="Удалить размер"
+                              onClick={() => removeSize(idx)}
+                            >×</button>
+                          )}
+                        </div>
                       </th>
                     ))}
                   </tr>
@@ -388,7 +387,6 @@ export default function AddBikePage() {
             </div>
           </div>
 
-          {/* Shared params */}
           <div className={styles.section}>
             <h3 className={styles.sectionTitle}>Общие параметры (для всех размеров)</h3>
             <div className={styles.sharedGrid}>

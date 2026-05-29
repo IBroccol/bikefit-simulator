@@ -26,7 +26,7 @@ export default function App() {
             <Route element={<PrivateRoute />}>
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/bikes" element={<MyBikesPage />} />
-              <Route path="/bikes/add" element={<AddBikePage />} />
+              <Route path="/bikes/new" element={<AddBikePage />} />
               <Route path="/anthropometry" element={<AnthropometryPage />} />
               <Route path="/canvas" element={<CanvasPage />} />
               <Route path="/compare" element={<ComparePage />} />

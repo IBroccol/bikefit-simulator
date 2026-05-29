@@ -5,7 +5,7 @@ import Card from '../components/ui/Card';
 import styles from './DashboardPage.module.css';
 
 const NAV_ITEMS = [
-  { to: '/bikes/add',      label: 'Добавить велосипед' },
+  { to: '/bikes/new',      label: 'Добавить велосипед' },
   { to: '/bikes',          label: 'Мои велосипеды' },
   { to: '/anthropometry',  label: 'Мои параметры' },
   { to: '/canvas',         label: 'Настройка посадки' },

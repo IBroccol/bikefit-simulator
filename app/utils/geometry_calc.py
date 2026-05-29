@@ -6,16 +6,13 @@ logger = logging.getLogger(__name__)
 
 
 def _cos_th(a, b, alpha_deg):
-    """Длина третьей стороны треугольника по теореме косинусов."""
     return sqrt(a**2 + b**2 - 2*a*b*cos(radians(alpha_deg)))
 
 
 def _angle_by_sides(a, b, c):
-    """Угол (в градусах) напротив стороны c. Возвращает None при вырожденном треугольнике."""
     denom = 2 * a * b
     if denom == 0:
         return None
-    # Зажимаем в [-1, 1] на случай погрешностей вычислений
     cos_val = max(-1.0, min(1.0, (a**2 + b**2 - c**2) / denom))
     return degrees(acos(cos_val))
 
@@ -25,15 +22,11 @@ def _dist(p1, p2):
 
 
 def basic_fit(geometry, anthropometry):
-    """Рассчитывает базовую посадку по геометрии велосипеда и антропометрии.
-
-    Возвращает словарь с параметрами посадки или {"error": "..."} если расчёт невозможен.
-    """
     if not anthropometry:
         return {"error": "Антропометрические данные не найдены. Заполните антропометрию перед расчётом посадки."}
 
     try:
-        _numeric = (int, float, str, Decimal)
+        _numeric = (int, float, Decimal)
         g = {k: float(v) for k, v in geometry.items() if isinstance(v, _numeric)}
         a = {k: float(v) for k, v in anthropometry.items() if isinstance(v, _numeric)}
 
@@ -42,16 +35,28 @@ def basic_fit(geometry, anthropometry):
 
         saddle_offset = g['crankLen'] + seat_hight * cos(radians(g['seatAngle'])) - a['hip'] * cos(radians(35))
 
+        seat_a = radians(g['seatAngle'])
+        saddle_x = -(seat_hight - g['saddleHeight']) * cos(seat_a) + saddle_offset
+        saddle_y = (seat_hight - g['saddleHeight']) * sin(seat_a) + g['saddleHeight']
+
         seat = [
-            -seat_hight * cos(radians(g['seatAngle'])) + saddle_offset,
-            seat_hight * sin(radians(g['seatAngle'])),
-        ]
-        hands = [
-            g['reach'] + g['stemLen'] + g['barReach'] + g['shifterReach'] - stem_hight * cos(radians(g['headAngle'])),
-            g['stack'] + stem_hight * sin(radians(g['headAngle'])) + g['stemLen'] * sin(radians(90 + g['stemAngle'] - g['headAngle'])) + 10,
+            saddle_x - g['saddleLen'] / 8,
+            saddle_y + a['hipJointOffset'],
         ]
 
-        arms_len = _cos_th(a['upperarm'], a['forearm'], 155)
+        shifter_angle = 30
+        curve_r1 = g['barDrop'] * 0.25
+        arc_r = curve_r1 + g['shifterReach']
+        ha = radians(g['headAngle'])
+        sa = radians(g['stemAngle'])
+        stem_tip_x = g['reach'] - stem_hight * cos(ha) + g['stemLen'] * sin(ha - sa)
+        stem_tip_y = g['stack'] + stem_hight * sin(ha) + g['stemLen'] * cos(ha - sa)
+        hands = [
+            stem_tip_x + g['barReach'] - curve_r1 + arc_r * cos(radians(shifter_angle)),
+            stem_tip_y - curve_r1 + arc_r * sin(radians(shifter_angle)),
+        ]
+
+        arms_len = _cos_th(a['upperarm'], a['forearm'] * 1.2, 155)
         torso_len = a['torsoMid']
         d = _dist(seat, hands)
 
@@ -66,7 +71,7 @@ def basic_fit(geometry, anthropometry):
             'stemHight':    stem_hight,
             'saddleOffset': min(saddle_offset, g['saddleRailLen'] / 2),
             'torsoAngle':   angle + base_angle,
-            'shifterAngle': 30,
+            'shifterAngle': shifter_angle,
         }
 
     except (KeyError, TypeError, ValueError) as e:

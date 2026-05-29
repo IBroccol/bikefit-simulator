@@ -5,7 +5,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Допустимые колонки таблицы bike_sizes (защита от SQL-инъекции через имена полей)
 _BIKE_SIZE_COLUMNS = frozenset({
     "bike_model_id", "size",
     "seatTube", "seatAngle", "headTube", "headAngle", "bbdrop",
@@ -17,8 +16,6 @@ _BIKE_SIZE_COLUMNS = frozenset({
     "minseatpostLen", "maxseatpostLen",
 })
 
-
-# --- Пользователи ---
 
 def create_user_account(username, password):
     try:
@@ -56,8 +53,6 @@ def get_user_by_id(user_id):
             cur.execute("SELECT id, username, role FROM users WHERE id=%s", (user_id,))
             return cur.fetchone()
 
-
-# --- Велосипеды ---
 
 def add_user_bike(user_id: int, bike: dict) -> dict:
     try:
@@ -244,8 +239,6 @@ def set_bike_pending(bike_id, user_id):
         return {"success": False, "error": "Не удалось отправить велосипед на модерацию"}
 
 
-# --- Антропометрия ---
-
 def add_user_anthropometry(user_id, data):
     try:
         with get_conn() as conn:
@@ -282,8 +275,6 @@ def get_latest_user_anthropometry(user_id):
         logger.error(f"get_latest_user_anthropometry: {e}", exc_info=True)
         return None
 
-
-# --- Посадка ---
 
 def save_fit_settings(user_id, data):
     try:
